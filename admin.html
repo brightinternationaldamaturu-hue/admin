@@ -11,6 +11,16 @@
 
 
 <style>
+@keyframes pop {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 .logout-btn{
   width:100%;
   background:#111;
@@ -2991,15 +3001,21 @@ async function addCompanyExpense(){
 
 
 function logout(){
-  if(confirm("Are you sure you want to logout?")){
-    auth.signOut()
-      .then(() => {
-        window.location.href = "index.html";
-      })
-      .catch(err => {
-        alert("Error: " + err.message);
-      });
-  }
+  document.getElementById("logoutModal").style.display = "flex";
+}
+
+function closeLogoutModal(){
+  document.getElementById("logoutModal").style.display = "none";
+}
+
+function confirmLogout(){
+  auth.signOut()
+    .then(() => {
+      window.location.href = "index.html";
+    })
+    .catch((err) => {
+      alert("Logout failed: " + err.message);
+    });
 }
 </script>
 
@@ -3120,7 +3136,62 @@ function logout(){
 
 
 
+<!-- LOGOUT MODAL -->
+<div id="logoutModal" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.5);
+  z-index:999999;
+  justify-content:center;
+  align-items:center;
+">
 
+  <div style="
+    background:#fff;
+    width:90%;
+    max-width:380px;
+    border-radius:14px;
+    padding:20px;
+    text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,0.2);
+    animation: pop .2s ease;
+  ">
+
+    <h2 style="margin:0 0 10px; font-size:26px;">🚪 Logout</h2>
+
+    <p style="color:#666; font-size:18px; margin-bottom:20px;">
+      Are you sure you want to logout from your admin dashboard?
+    </p>
+
+    <div style="display:flex; gap:10px; justify-content:center;">
+
+      <button onclick="closeLogoutModal()" style="
+        padding:10px 15px;
+        border:none;
+        border-radius:8px;
+        background:#eee;
+        cursor:pointer;
+      ">
+        Cancel
+      </button>
+
+      <button onclick="confirmLogout()" style="
+        padding:10px 15px;
+        border:none;
+        border-radius:8px;
+        background:#ff1a1a;
+        color:#fff;
+        font-weight:600;
+        cursor:pointer;
+      ">
+        Yes, Logout
+      </button>
+
+    </div>
+
+  </div>
+</div>
 
 </body>
 
