@@ -404,7 +404,6 @@ canvas{
 
 
 
-
 <div class="grid" style="max-width:autopx;margin:0 auto;">
   
 
@@ -604,9 +603,8 @@ canvas{
   <button onclick="toggleUsers()" style="width:100%;">
     👥 View Users
   </button>
+
 </div>
-
-
 
 <div class="card section" id="usersCard" style="display:none;">
   <h3>All Users</h3>
@@ -692,9 +690,6 @@ canvas{
   </div>
 
 
-</div>
-
-
 
 <div class="card section">
   <h3>📦 Manual Sales</h3>
@@ -716,6 +711,21 @@ canvas{
     </table>
   </div>
 </div>
+
+<div class="card section">
+  <h3>💼 Other Income</h3>
+
+  <table style="width:100%; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th>Source</th>
+        <th>Amount</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="otherIncomeTable"></tbody>
+  </table>
+
 
 <div class="card section">
   <button onclick="toggleInvoices()" style="width:100%;">
@@ -746,21 +756,20 @@ canvas{
   </div>
 </div>
 
-<div class="card section">
-  <h3>💼 Other Income</h3>
+</div>
+</div>
 
-  <table style="width:100%; border-collapse:collapse;">
-    <thead>
-      <tr>
-        <th>Source</th>
-        <th>Amount</th>
-        <th>Date</th>
-      </tr>
-    </thead>
-    <tbody id="otherIncomeTable"></tbody>
-  </table>
+
+
 </div>
-</div>
+
+
+
+
+
+
+
+
 
 
 
@@ -990,6 +999,13 @@ canvas{
 </div>
 
 
+
+<button onclick="logout()" style="
+  margin-top:20px;
+  background:red;
+">
+ Logout
+</button>
 
 
 
@@ -2959,6 +2975,16 @@ async function addCompanyExpense(){
   document.getElementById("expenseNote").value = "";
 }
 
+
+function logout(){
+  auth.signOut()
+    .then(() => {
+      window.location.href = "index.html"; // redirect to login page
+    })
+    .catch((error) => {
+      alert("Logout failed: " + error.message);
+    });
+}
 </script>
 
 
