@@ -11,6 +11,23 @@
 
 
 <style>
+.logout-btn{
+  width:100%;
+  background:#111;
+  color:#fff;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  font-weight:600;
+  margin-top:20px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.logout-btn:hover{
+  background:#ff1a1a;
+}
+
 /* STICKY HEADER */
 .modern-table thead th {
   position: sticky;
@@ -1000,11 +1017,8 @@ canvas{
 
 
 
-<button onclick="logout()" style="
-  margin-top:20px;
-  background:red;
-">
- Logout
+<button onclick="logout()" class="logout-btn">
+  🚪 Logout
 </button>
 
 
@@ -2977,13 +2991,15 @@ async function addCompanyExpense(){
 
 
 function logout(){
-  auth.signOut()
-    .then(() => {
-      window.location.href = "index.html"; // redirect to login page
-    })
-    .catch((error) => {
-      alert("Logout failed: " + error.message);
-    });
+  if(confirm("Are you sure you want to logout?")){
+    auth.signOut()
+      .then(() => {
+        window.location.href = "index.html";
+      })
+      .catch(err => {
+        alert("Error: " + err.message);
+      });
+  }
 }
 </script>
 
