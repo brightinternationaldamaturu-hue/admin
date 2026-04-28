@@ -11,6 +11,108 @@
 
 
 <style>
+/* STICKY HEADER */
+.modern-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f8f9fb;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* ===== MODERN TABLE DESIGN ===== */
+.table-container {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  overflow: hidden;
+  margin-top: 10px;
+
+  border: 2px solid #ff1a1a; /* 🔴 RED BORDER */
+}
+
+/* table */
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+/* header */
+.modern-table thead {
+  background: #f8f9fb;
+}
+
+.modern-table th {
+  text-align: left;
+  padding: 14px;
+  font-weight: 600;
+  color: #555;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+/* rows */
+.modern-table td {
+  padding: 14px;
+  border-top: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+/* zebra + hover */
+.modern-table tbody tr:nth-child(even) {
+  background: #fcfcfc;
+}
+
+.modern-table tbody tr:hover {
+  background: #f1f7ff;
+  transition: 0.2s;
+}
+
+/* amount styling */
+.amount {
+  font-weight: 700;
+  color: #111;
+}
+
+/* type badges */
+.badge {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* colors */
+.badge.fund { background:#e6f7ee; color:#16a34a; }
+.badge.purchase { background:#fdecea; color:#dc2626; }
+.badge.income { background:#e0f2fe; color:#0284c7; }
+.badge.expense { background:#fff7ed; color:#ea580c; }
+
+/* email style */
+.email {
+  font-weight: 500;
+  color: #333;
+}
+
+/* date style */
+.date {
+  font-size: 12px;
+  color: #888;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* INVOICE MODAL FIX */
 .invoice-box{
@@ -537,9 +639,6 @@ canvas{
 <div class="card section">
   <h3 style="cursor:pointer;" onclick="toggleTransactions()">
     📊 Recent Transactions ▼
-
-  </h3>
-
 <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
 
   <input type="date" id="txStartDate">
@@ -555,6 +654,8 @@ canvas{
 
 </div>
 
+  </h3>
+
   <!-- Loader -->
   <div id="txLoader" style="display:none;text-align:center;padding:10px;">
     <div class="spinner"></div>
@@ -562,17 +663,28 @@ canvas{
   </div>
 
   <!-- Table Wrapper -->
-  <div id="txWrapper" style="display:none; overflow-x:auto;">
-    <table style="width:100%; border-collapse:collapse; font-size:14px;">
+<div id="txWrapper" style="display:none;">
+  <div class="table-container" style="max-height:600px; overflow-y:auto;">
+    <table class="modern-table">
       
       <thead>
-        <tr style="background:#f1f1f1;">
-          <th style="padding:10px;border:1px solid #ddd;">Email</th>
-          <th style="padding:10px;border:1px solid #ddd;">Type</th>
-          <th style="padding:10px;border:1px solid #ddd;">Amount</th>
-          <th style="padding:10px;border:1px solid #ddd;">Date</th>
+        <tr>
+          <th>Email</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Date</th>
         </tr>
       </thead>
+
+      <tbody id="transactions"></tbody>
+
+    </table>
+  </div>
+</div>
+
+
+    <table style="width:100%; border-collapse:collapse; font-size:14px;">
 
       <tbody id="transactions"></tbody>
 
@@ -1004,6 +1116,7 @@ await logActivity("Added Freelance Income", `${source} ₦${amount}`);
     type: "income",
     category: "freelancing",
     amount: amount,
+    description: `Freelance income from ${source}`,
     source: source,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
@@ -1159,12 +1272,13 @@ async function approveManual(id){
   });
 
   // add to revenue
-  await db.collection("companyTransactions").add({
-    type: "income",
-    category: "manual-sale",
-    amount: Number(data.amount) || 0,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
+await db.collection("companyTransactions").add({
+  type: "income",
+  category: "manual-sale",
+  amount: Number(data.amount) || 0,
+  description: `Manual sale from ${data.vendor}`,
+  createdAt: firebase.firestore.FieldValue.serverTimestamp()
+});
 
   await logActivity("Approved Manual Sale", `${data.vendor} ₦${data.amount}`);
 
@@ -1687,12 +1801,13 @@ async function loadTransactions(){
   txSnap.forEach(doc=>{
     const t = doc.data();
 
-    all.push({
-      type: t.type,
-      amount: t.amount || t.price || 0,
-      email: t.email || "System",
-      date: t.createdAt?.toDate ? t.createdAt.toDate() : null
-    });
+all.push({
+  type: t.type,
+  amount: t.amount || t.price || 0,
+  email: t.email || "System",
+  description: t.plan || t.voucher || t.source || "—",
+  date: t.createdAt?.toDate ? t.createdAt.toDate() : null
+});
   });
 
   // 🔹 COMPANY TRANSACTIONS
@@ -1704,12 +1819,13 @@ async function loadTransactions(){
   companySnap.forEach(doc=>{
     const t = doc.data();
 
-    all.push({
-      type: t.category || t.type,
-      amount: t.amount || 0,
-      email: "Company",
-      date: t.createdAt?.toDate ? t.createdAt.toDate() : null
-    });
+all.push({
+  type: t.category || t.type,
+  amount: t.amount || 0,
+  email: "Company",
+  description: t.description || t.source || t.category || "—",
+  date: t.createdAt?.toDate ? t.createdAt.toDate() : null
+});
   });
 
   // 🔥 SAVE FOR FILTERING
@@ -1721,24 +1837,41 @@ async function loadTransactions(){
   // 🔥 DISPLAY
   container.innerHTML = "";
 
-  all.forEach(t=>{
-    container.innerHTML += `
-      <tr>
-        <td style="padding:8px;border:1px solid #ddd;">
-          ${t.email}
-        </td>
-        <td style="padding:8px;border:1px solid #ddd;">
-          ${t.type}
-        </td>
-        <td style="padding:8px;border:1px solid #ddd;">
-          ₦${t.amount}
-        </td>
-        <td style="padding:8px;border:1px solid #ddd;">
-          ${t.date ? t.date.toLocaleString() : ""}
-        </td>
-      </tr>
-    `;
-  });
+all.forEach(t => {
+
+  const typeClass = 
+    t.type && t.type.includes("fund") ? "fund" :
+    t.type && t.type.includes("purchase") ? "purchase" :
+    t.type && t.type.includes("income") ? "income" :
+    t.type && t.type.includes("expense") ? "expense" :
+    "income";
+
+  container.innerHTML += `
+  <tr>
+    <td class="email">
+      ${t.email === "Company" ? "🏢 Company (BIVA)" : t.email}
+    </td>
+
+    <td>
+      <span class="badge ${typeClass}">
+        ${t.type || "-"}
+      </span>
+    </td>
+
+    <td style="color:#666;">
+      ${t.description || "—"}
+    </td>
+
+    <td class="amount">
+      ₦${Number(t.amount || 0).toLocaleString("en-NG")}
+    </td>
+
+    <td class="date">
+      ${t.date ? t.date.toLocaleString() : ""}
+    </td>
+  </tr>
+  `;
+});
 
 }
 
@@ -2414,13 +2547,13 @@ async function approveInvoice(id, amount){
     status: "approved"
   });
 
-  await db.collection("companyTransactions").add({
-    type: "expense",
-    category: "salary",
-    amount: amount,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-
+await db.collection("companyTransactions").add({
+  type: "expense",
+  category: "salary",
+  amount: amount,
+  description: "Staff salary payment",
+  createdAt: firebase.firestore.FieldValue.serverTimestamp()
+});
   await logActivity("Approved Invoice", `₦${amount}`);
 
   alert("Salary approved & deducted");
@@ -2813,7 +2946,7 @@ async function addCompanyExpense(){
     type: "expense", // 🔥 always expense
     category: type,  // 🔥 salary OR expenditure
     amount: amount,
-    note: note,
+    description: note,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 
