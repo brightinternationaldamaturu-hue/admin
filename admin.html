@@ -418,197 +418,122 @@ canvas{
 </div>
 
 
+
 <div id="dashboardPage" class="page active">
-<div class="card section date-filter-card" style="background:Grey; color:#fff; font-size:22px; padding:25px; border-radius:15px;">
 
-<input type="date" id="startDate" style="font-size:26px; padding:12px; auto; margin:8px 0;">
-<input type="date" id="endDate" style="font-size:26px; padding:12px; width:auto; margin:8px 0;">
-<button onclick="filterSales()" style="font-size:26px; padding:14px 18px; width:auto; border-radius:10px; font-weight:600;">
-  Apply Filter
-</button>
+<div class="grid" style="max-width:autopx;margin:0 auto;">
 
+<div style="
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color:#fff;
+  padding:18px;
+  border-radius:16px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+  width:100%;
+  overflow:hidden;
+">
 
+  <h3 style="margin:0 0 15px; font-size:22px; color:#f1f5f9;">
+    📊 Financial Overview
+  </h3>
+
+  <!-- FILTER (Dashboard Only) -->
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+    <input type="date" id="startDate" style="padding:10px; border-radius:8px;">
+    <input type="date" id="endDate" style="padding:10px; border-radius:8px;">
+    <button onclick="filterSales()" style="padding:10px 15px; border-radius:8px;">
+      Apply Filter
+    </button>
+  </div>
+
+ <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
+
+    <!-- Income -->
+    <div style="background:rgba(255,255,255,0.08); padding:12px; border-radius:12px;">
+      <div style="font-size:18px; color:Cyan; font-weight:700;">Total Income</div>
+      <div id="totalSales" style="font-size:26px; font-weight:1000; color:Yellow;">₦0</div>
+    </div>
+
+    <!-- EXPENSE -->
+    <div style="background:rgba(255,255,255,0.08); padding:12px; border-radius:12px;">
+      <div style="font-size:18px; color:Cyan; font-weight:700;">Total Expenditure</div>
+      <div id="cardTotalExpense" style="font-size:26px; font-weight:1000; color:Pink;">₦0</div>
+    </div>
+
+    <!-- PENDING -->
+    <div style="background:rgba(255,255,255,0.08); padding:12px; border-radius:12px;">
+      <div style="font-size:18px; color:Cyan; font-weight:700;">Pending Manual Sales</div>
+      <div id="pendingManual" style="font-size:26px; font-weight:1000; color:Magenta;">₦0</div>
+    </div>
+
+    <!-- APPROVED -->
+    <div style="background:rgba(255,255,255,0.08); padding:12px; border-radius:12px;">
+      <div style="font-size:18px; color:Cyan; font-weight:700;">Approved Sales</div>
+      <div id="approvedManual" style="font-size:26px; font-weight:1000; color:#22c55e;">₦0</div>
+    </div>
+
+    <!-- FUNDING -->
+    <div style="background:rgba(255,255,255,0.08); padding:12px; border-radius:12px;">
+      <div style="font-size:18px; color:Cyan; font-weight:700;">Total Funding</div>
+      <div id="totalFunding" style="font-size:26px; font-weight:1000; color:#60a5fa;">₦0</div>
+    </div>
+
+    <!-- NET PROFIT -->
+    <div style="grid-column:span 2; background:rgba(255,255,255,0.12); padding:14px; border-radius:12px; text-align:center;">
+      <div style="font-size:28px; color:Cyan; font-weight:700;">Net Profit</div>
+      <div id="cardNetProfit" style="font-size:38px; font-weight:1000; color:chartreuse;">₦0</div>
+    </div>
+
+  </div>
+</div>
+</div>
 
 
 
 <div class="grid" style="max-width:autopx;margin:0 auto;">
-  
-
-<div style="
-  background:#fff;
-  padding:15px;
-  border-radius:12px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.08);
-  width:100%;
-  max-width:100%;
-  overflow:hidden;
-">
-
-  <h3 style="color:grey;font-size:32px;margin:0 0 10px;">
-   📈Money In:
-  </h3>
-
-  <p id="totalSales" style="
-    color:Teal;
-    font-size:clamp(18px, 4vw, 32px);
-    font-weight:700;
-    margin:0;
-    word-break:break-all;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  ">
-    ₦0
-  </p>
-
-</div>
-
-
-
-
-
-<div style="
-  background:#fff;
-  padding:15px;
-  border-radius:12px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.08);
-  width:100%;
-  overflow:hidden;
-">
-
-  <h3 style="color:grey;font-size:32px;margin:0 0 10px;">
-  🟥Pending:
-  </h3>
-
-  <p id="pendingManual" style="
-    font-size:clamp(18px, 4vw, 32px);
-    color:red;
-    font-weight:bold;
-    margin:0;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    word-break:break-all;
-  ">
-    ₦0
-  </p>
-
-</div>
-
-
-
-
-
-
-<div style="
-  background:#fff;
-  padding:15px;
-  border-radius:12px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.08);
-  width:100%;
-  overflow:hidden;
-">
-
-  <h3 style="color:grey;font-size:32px;margin:0 0 10px;">✅Approved:
-  </h3>
-
-  <p id="approvedManual" style="
-    font-size:clamp(18px, 4vw, 32px);
-    color:green;
-    font-weight:bold;
-    margin:0;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    word-break:break-all;
-  ">
-    ₦0
-  </p>
-
-</div>
-
-
-
-
-
-<div style="
-  background:#fff;
-  padding:15px;
-  border-radius:12px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.08);
-  width:100%;
-  overflow:hidden;
-">
-
-  <h3 style="color:grey;font-size:32px;margin:0 0 10px;">
-    🏦 Funding:
-  </h3>
-
-  <p id="totalFunding" style="
-    font-size:clamp(18px, 4vw, 32px);
-    color:Teal;
-    font-weight:bold;
-    margin:0;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    word-break:break-all;
-  ">
-    ₦0
-  </p>
-
-</div>
-
-
-
-
-
-
-
-<div style="
-  background:#fff;
-  padding:15px;
-  border-radius:12px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.08);
-  width:100%;
-  overflow:hidden;
-">
-
-  <h3 style="color:grey;font-size:32px;margin:0 0 10px;">
-    👥 Users:
-  </h3>
-
-  <p id="totalUsers" style="
-    font-size:clamp(18px, 4vw, 32px);
-    color:#007bff;
-    font-weight:bold;
-    margin:0;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    word-break:break-all;
-  ">
-    0
-  </p>
-
-</div>
-</div>
-</div>
-
-
-
-
+<!-- CHART -->
 <div class="card section">
   <h3>Profit Analytics</h3>
-  <div style="position:relative;height:300px;">
+  <div style="position:relative;height:autopx;">
     <canvas id="profitChart"></canvas>
   </div>
-</div> 
-
-
-
+</div>
 
 </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -655,7 +580,37 @@ canvas{
     </table>
   </div>
 </div>
+
+<div style="
+  background:#fff;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.08);
+  width:100%;
+  overflow:hidden;
+">
+
+  <h3 style="color:grey;font-size:32px;margin:0 0 10px;">
+    👥 Users:
+  </h3>
+
+  <p id="totalUsers" style="
+    font-size:clamp(18px, 4vw, 32px);
+    color:#007bff;
+    font-weight:bold;
+    margin:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    word-break:break-all;
+  ">
+    0
+  </p>
+
 </div>
+</div>
+</div>
+
 
 
 
@@ -1359,6 +1314,9 @@ function formatNumber(num){
 
 
 
+
+
+
 async function filterSales(){
 isFilteredView = true;
 
@@ -1409,13 +1367,13 @@ companySnap.forEach(doc => {
   const date = t.createdAt.toDate();
   if(date < startDate || date > endDate) return;
 
-  if(t.type === "income"){
-    income += t.amount || 0;
-  }
+if(t.type === "income" || t.category === "income"){
+  income += t.amount || 0;
+}
 
-  if(t.type === "expense"){
-    expenses += t.amount || 0;
-  }
+if(t.type === "expense" || t.category === "salary" || t.category === "expenditure"){
+  expenses += t.amount || 0;
+}
 });
 
 
@@ -1440,8 +1398,8 @@ companySnap.forEach(doc => {
   });
 
   // 🔥 FINAL DISPLAY ONLY (NO loadStats CALL)
-  document.getElementById("totalSales").innerText =
-    "₦" + (income - expenses).toLocaleString();
+document.getElementById("totalSales").innerText =
+  "₦" + income.toLocaleString("en-NG");
 
   document.getElementById("totalFunding").innerText =
     "₦" + funding.toLocaleString();
@@ -1451,8 +1409,12 @@ companySnap.forEach(doc => {
 
   document.getElementById("approvedManual").innerText =
     "₦" + approvedManual.toLocaleString();
-  document.getElementById("totalSales").innerText =
-    "₦" + (income - expenses).toLocaleString("en-NG");
+
+document.getElementById("cardTotalExpense").innerText =
+  "₦" + expenses.toLocaleString("en-NG");
+
+document.getElementById("cardNetProfit").innerText =
+  "₦" + (income - expenses).toLocaleString("en-NG");
 }
 
 
@@ -1572,9 +1534,14 @@ async function loadStats(){
       income += t.amount || 0;
     }
 
-    if (t.type === "expense") {
-      expenses += t.amount || 0;
-    }
+const isExpense =
+  t.type === "expense" ||
+  t.category === "salary" ||
+  t.category === "expenditure";
+
+if (isExpense) {
+  expenses += t.amount || 0;
+}
   });
 
   // 🔥 TRANSACTIONS (FUNDING ONLY)
@@ -1622,8 +1589,8 @@ async function loadStats(){
   });
 
   // ✅ FINAL VALUES
-  document.getElementById("totalSales").innerText =
-    "₦" + (income - expenses).toLocaleString("en-NG");
+document.getElementById("totalSales").innerText =
+  "₦" + income.toLocaleString("en-NG");
 
   document.getElementById("totalFunding").innerText =
     "₦" + funding.toLocaleString("en-NG");
@@ -1633,6 +1600,12 @@ async function loadStats(){
 
   document.getElementById("approvedManual").innerText =
     "₦" + approvedManual.toLocaleString("en-NG");
+
+document.getElementById("cardTotalExpense").innerText =
+  "₦" + expenses.toLocaleString("en-NG");
+
+document.getElementById("cardNetProfit").innerText =
+  "₦" + (income - expenses).toLocaleString("en-NG");
 }
 
 
