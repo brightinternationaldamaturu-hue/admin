@@ -26,6 +26,18 @@
 
 
 <style>
+.voucher-badge {
+  display: inline-block;
+  background: #111;
+  color: #00ffcc;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 2px 0;
+}
+
+
 thead th {
   position: sticky;
   top: 0;
@@ -2168,24 +2180,20 @@ function loadUserTx(userId){
           ? t.createdAt.toDate().toLocaleString()
           : "N/A";
 
-        // 🎯 CLEAN LABELING
+        // 🎯 TRANSACTION LABEL + COLOR
         let label = "";
         let color = "#000";
 
-if(t.type === "fund"){
-
-  if(t.source === "admin"){
-    label = "👨‍💼 Admin Fund";
-  }
-  else if(t.source === "self"){
-    label = "👤 Self Fund";
-  }
-  else {
-    label = "💰 Funding";
-  }
-
-  color = "green";
-}
+        if(t.type === "fund"){
+          if(t.source === "admin"){
+            label = "👨‍💼 Admin Fund";
+          } else if(t.source === "self"){
+            label = "👤 Self Fund";
+          } else {
+            label = "💰 Funding";
+          }
+          color = "green";
+        }
         else if(t.type === "purchase"){
           label = "🛒 Purchase";
           color = "#8B0000";
@@ -2194,22 +2202,49 @@ if(t.type === "fund"){
           label = "➖ Debit";
           color = "red";
         }
-        else {
-          label = t.type;
+        else if(t.type === "bonus"){
+          label = "🎁 Bonus";
+          color = "purple";
+        }
+        else{
+          label = t.type || "—";
         }
 
+        // 🎟️ DETAILS (SMART HANDLING)
+        let details = "—";
+
+        if(Array.isArray(t.vouchers) && t.vouchers.length > 0){
+          details = t.vouchers
+            .map(v => `<span class="voucher-badge">🎟️ ${v}</span>`)
+            .join("<br>");
+        }
+        else if(t.voucher){
+          details = `<span class="voucher-badge">🎟️ ${t.voucher}</span>`;
+        }
+        else if(t.plan){
+          details = `📦 ${t.plan}`;
+        }
+        else if(t.source){
+          details = `🔗 ${t.source}`;
+        }
+
+        // 💰 AMOUNT FORMAT
+        const amount = Number(t.amount || t.price || 0)
+          .toLocaleString("en-NG");
+
+        // 🧾 RENDER ROW
         box.innerHTML += `
           <tr>
-            <td style="padding:8px;border:1px solid #ddd;color:${color};">
+            <td style="padding:8px;border:1px solid #ddd;color:${color};font-weight:600;">
               ${label}
             </td>
 
-            <td style="padding:8px;border:1px solid #ddd;">
-              ₦${t.amount || t.price || 0}
+            <td style="padding:8px;border:1px solid #ddd;font-weight:600;">
+              ₦${amount}
             </td>
 
-            <td style="padding:8px;border:1px solid #ddd;">
-              ${t.plan || t.voucher || "-"}
+            <td style="padding:8px;border:1px solid #ddd;word-break:break-all;">
+              ${details}
             </td>
 
             <td style="padding:8px;border:1px solid #ddd;">
@@ -2219,6 +2254,7 @@ if(t.type === "fund"){
         `;
       });
 
+      // 🧾 EMPTY STATE
       if(snapshot.empty){
         box.innerHTML = `
           <tr>
@@ -2231,7 +2267,6 @@ if(t.type === "fund"){
 
     });
 }
-
 
 
 
@@ -3204,7 +3239,7 @@ function confirmLogout(){
     <tr style="background:#f1f1f1;">
       <th style="padding:8px;border:1px solid #ddd;">Type</th>
       <th style="padding:8px;border:1px solid #ddd;">Amount</th>
-      <th style="padding:8px;border:1px solid #ddd;">Details</th>
+      <th style="padding:8px;border:1px solid #ddd;">Voucher Code</th>
       <th style="padding:8px;border:1px solid #ddd;">Date</th>
     </tr>
   </thead>
