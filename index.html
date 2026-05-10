@@ -118,6 +118,37 @@ body{
   font-weight:900;
 }
 
+.dashboard-filter{
+  margin-top:18px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  max-width:600px;
+}
+
+.custom-range{
+  display:none;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.custom-range.active{
+  display:flex;
+}
+
+.custom-range input{
+  margin-bottom:0;
+  min-width:180px;
+  flex:1;
+}
+
+.dashboard-filter select{
+  max-width:250px;
+  margin-bottom:0;
+}
+
+
+
 .searchBox{
   background:white;
   border-radius:16px;
@@ -404,24 +435,62 @@ textarea{
 <!-- MAIN -->
 <div class="main">
 
+
+
+
+
 <!-- TOP -->
 <div class="topbar">
 
-  <div>
+  <div style="width:100%;">
+
     <h1>Fintech Dashboard</h1>
+
+    <!-- DASHBOARD FILTER -->
+    <div class="dashboard-filter">
+
+      <select id="chartFilter" onchange="handleFilterChange()">
+        <option value="7">Last 7 Days</option>
+        <option value="30">Last 30 Days</option>
+        <option value="90">Last 90 Days</option>
+        <option value="custom">Custom Range</option>
+      </select>
+
+      <div id="customDateRange" class="custom-range">
+
+        <input type="date" id="startDate">
+
+        <input type="date" id="endDate">
+
+        <button class="btn green"
+        onclick="refreshDashboardData()">
+        Apply
+        </button>
+
+      </div>
+
+    </div>
+
   </div>
 
   <div class="flex">
 
     <div class="searchBox">
-      <input type="text" id="globalSearch" placeholder="Search users, voucher, transaction...">
+      <input type="text"
+      id="globalSearch"
+      placeholder="Search users, voucher, transaction...">
     </div>
 
-    <button class="btn red" onclick="logout()">Logout</button>
+    <button class="btn red" onclick="logout()">
+      Logout
+    </button>
 
   </div>
 
 </div>
+
+
+
 
 <!-- DASHBOARD -->
 <div id="dashboardPage" class="page active">
@@ -789,22 +858,46 @@ function showPage(page,btn){
 /* ===========================
 DASHBOARD
 =========================== */
-
-/* ===========================
-DASHBOARD
-=========================== */
-
 async function loadDashboard(){
 
-  const days =
-  Number(document.getElementById("chartFilter")?.value || 7);
+  const filter =
+  document.getElementById("chartFilter")?.value || 7;
 
-  const now = new Date();
+  let startDate = new Date();
+  let endDate = new Date();
 
-  const startDate =
-  new Date();
+  /* NORMAL FILTER */
 
-  startDate.setDate(now.getDate() - days);
+  if(filter !== 'custom'){
+
+    startDate.setDate(
+      endDate.getDate() - Number(filter)
+    );
+
+  }
+
+  /* CUSTOM FILTER */
+
+  else{
+
+    const start =
+    document.getElementById("startDate").value;
+
+    const end =
+    document.getElementById("endDate").value;
+
+    if(!start || !end){
+      alert("Select start and end dates");
+      return;
+    }
+
+    startDate = new Date(start);
+    endDate = new Date(end);
+
+    /* INCLUDE FULL END DAY */
+    endDate.setHours(23,59,59,999);
+
+  }
 
   let funding = 0;
   let profit = 0;
@@ -835,14 +928,11 @@ async function loadDashboard(){
     const txDate =
     t.createdAt.toDate();
 
-    /* APPLY FILTER RANGE */
-    if(txDate < startDate)
+    if(txDate < startDate || txDate > endDate)
     return;
 
     const amount =
     Number(t.amount || t.price || 0);
-
-    /* FUNDING */
 
     if(
       t.type === 'fund' ||
@@ -854,16 +944,12 @@ async function loadDashboard(){
 
     }
 
-    /* PURCHASE PROFIT */
-
     if(t.type === 'purchase'){
 
       profit += amount;
       income += amount;
 
     }
-
-    /* DEBIT */
 
     if(t.type === 'admin-debit'){
 
@@ -888,8 +974,10 @@ async function loadDashboard(){
     const manualDate =
     d.createdAt.toDate();
 
-    if(manualDate < startDate)
-    return;
+    if(
+      manualDate < startDate ||
+      manualDate > endDate
+    ) return;
 
     if(d.status !== 'approved'){
 
@@ -914,8 +1002,10 @@ async function loadDashboard(){
     const expenseDate =
     e.createdAt.toDate();
 
-    if(expenseDate < startDate)
-    return;
+    if(
+      expenseDate < startDate ||
+      expenseDate > endDate
+    ) return;
 
     if(e.type === 'expense'){
 
@@ -943,6 +1033,8 @@ async function loadDashboard(){
   "₦" + expenditure.toLocaleString('en-NG');
 
 }
+
+
 
 
 
@@ -1823,23 +1915,45 @@ function loadLogs(){
 /* ===========================
 CHART
 =========================== */
-
-/* ===========================
-CHART
-=========================== */
-
 async function loadChart(){
 
-  const days =
-  Number(document.getElementById("chartFilter")
-  ?.value || 7);
+  const filter =
+  document.getElementById("chartFilter")
+  ?.value || 7;
 
-  const now = new Date();
+  let startDate = new Date();
+  let endDate = new Date();
 
-  const startDate =
-  new Date();
+  /* NORMAL FILTER */
 
-  startDate.setDate(now.getDate() - days);
+  if(filter !== 'custom'){
+
+    startDate.setDate(
+      endDate.getDate() - Number(filter)
+    );
+
+  }
+
+  /* CUSTOM FILTER */
+
+  else{
+
+    const start =
+    document.getElementById("startDate").value;
+
+    const end =
+    document.getElementById("endDate").value;
+
+    if(!start || !end){
+      return;
+    }
+
+    startDate = new Date(start);
+    endDate = new Date(end);
+
+    endDate.setHours(23,59,59,999);
+
+  }
 
   const txSnap =
   await db.collection("transactions").get();
@@ -1856,9 +1970,7 @@ async function loadChart(){
     const date =
     t.createdAt.toDate();
 
-    /* APPLY FILTER */
-
-    if(date < startDate)
+    if(date < startDate || date > endDate)
     return;
 
     const key =
@@ -1934,6 +2046,33 @@ async function loadChart(){
   });
 
 }
+
+
+
+function handleFilterChange(){
+
+  const filter =
+  document.getElementById("chartFilter").value;
+
+  const customBox =
+  document.getElementById("customDateRange");
+
+  if(filter === 'custom'){
+
+    customBox.classList.add("active");
+
+  }else{
+
+    customBox.classList.remove("active");
+
+    refreshDashboardData();
+
+  }
+
+}
+
+
+
 
 async function refreshDashboardData(){
 
