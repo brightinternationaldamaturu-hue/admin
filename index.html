@@ -443,6 +443,16 @@ textarea{
     <div class="stat-value" id="totalProfit">₦0</div>
   </div>
 
+<div class="card">
+  <div class="stat-title">Total Income</div>
+  <div class="stat-value" id="totalIncome">₦0</div>
+</div>
+
+<div class="card">
+  <div class="stat-title">Total Expenditure</div>
+  <div class="stat-value" id="totalExpenditure">₦0</div>
+</div>
+
   <div class="card">
     <div class="stat-title">Pending Manual</div>
     <div class="stat-value" id="pendingManual">₦0</div>
@@ -454,7 +464,7 @@ textarea{
 
 <div class="flex">
 
-<select id="chartFilter" onchange="loadChart()">
+<select id="chartFilter" onchange="refreshDashboardData()">
   <option value="7">Last 7 Days</option>
   <option value="30">Last 30 Days</option>
   <option value="90">Last 90 Days</option>
@@ -780,55 +790,163 @@ function showPage(page,btn){
 DASHBOARD
 =========================== */
 
+/* ===========================
+DASHBOARD
+=========================== */
+
 async function loadDashboard(){
+
+  const days =
+  Number(document.getElementById("chartFilter")?.value || 7);
+
+  const now = new Date();
+
+  const startDate =
+  new Date();
+
+  startDate.setDate(now.getDate() - days);
 
   let funding = 0;
   let profit = 0;
   let pending = 0;
+  let income = 0;
+  let expenditure = 0;
 
-  const usersSnap = await db.collection("users").get();
+  /* USERS */
+
+  const usersSnap =
+  await db.collection("users").get();
 
   document.getElementById("totalUsers").innerText =
   usersSnap.size;
 
-  const txSnap = await db.collection("transactions").get();
+  /* TRANSACTIONS */
+
+  const txSnap =
+  await db.collection("transactions").get();
 
   txSnap.forEach(doc=>{
 
     const t = doc.data();
 
-    if(t.type === 'fund' || t.type === 'admin-credit'){
-      funding += Number(t.amount || 0);
+    if(!t.createdAt || !t.createdAt.toDate)
+    return;
+
+    const txDate =
+    t.createdAt.toDate();
+
+    /* APPLY FILTER RANGE */
+    if(txDate < startDate)
+    return;
+
+    const amount =
+    Number(t.amount || t.price || 0);
+
+    /* FUNDING */
+
+    if(
+      t.type === 'fund' ||
+      t.type === 'admin-credit'
+    ){
+
+      funding += amount;
+      income += amount;
+
     }
 
+    /* PURCHASE PROFIT */
+
     if(t.type === 'purchase'){
-      profit += Number(t.price || t.amount || 0);
+
+      profit += amount;
+      income += amount;
+
+    }
+
+    /* DEBIT */
+
+    if(t.type === 'admin-debit'){
+
+      expenditure += amount;
+
     }
 
   });
 
-  const manualSnap = await db.collection("manualSales").get();
+  /* MANUAL SALES */
+
+  const manualSnap =
+  await db.collection("manualSales").get();
 
   manualSnap.forEach(doc=>{
 
     const d = doc.data();
 
+    if(!d.createdAt || !d.createdAt.toDate)
+    return;
+
+    const manualDate =
+    d.createdAt.toDate();
+
+    if(manualDate < startDate)
+    return;
+
     if(d.status !== 'approved'){
+
       pending += Number(d.amount || 0);
+
     }
 
   });
 
+  /* EXPENSES */
+
+  const expenseSnap =
+  await db.collection("companyTransactions").get();
+
+  expenseSnap.forEach(doc=>{
+
+    const e = doc.data();
+
+    if(!e.createdAt || !e.createdAt.toDate)
+    return;
+
+    const expenseDate =
+    e.createdAt.toDate();
+
+    if(expenseDate < startDate)
+    return;
+
+    if(e.type === 'expense'){
+
+      expenditure += Number(e.amount || 0);
+
+    }
+
+  });
+
+  /* DISPLAY */
+
   document.getElementById("totalFunding").innerText =
-  "₦"+funding.toLocaleString('en-NG');
+  "₦" + funding.toLocaleString('en-NG');
 
   document.getElementById("totalProfit").innerText =
-  "₦"+profit.toLocaleString('en-NG');
+  "₦" + profit.toLocaleString('en-NG');
 
   document.getElementById("pendingManual").innerText =
-  "₦"+pending.toLocaleString('en-NG');
+  "₦" + pending.toLocaleString('en-NG');
+
+  document.getElementById("totalIncome").innerText =
+  "₦" + income.toLocaleString('en-NG');
+
+  document.getElementById("totalExpenditure").innerText =
+  "₦" + expenditure.toLocaleString('en-NG');
 
 }
+
+
+
+
 
 /* ===========================
 USERS
@@ -928,12 +1046,62 @@ function filterUsers(){
 
 
 
+
+
+
+
 async function viewUser(id){
 
   const doc =
   await db.collection("users").doc(id).get();
 
   const u = doc.data();
+
+  /* LOAD USER TRANSACTIONS */
+
+  const txSnap =
+  await db.collection("transactions")
+  .where("userId","==",id)
+  .orderBy("createdAt","desc")
+  .limit(20)
+  .get();
+
+  let transactionsHTML = '';
+
+  txSnap.forEach(tx=>{
+
+    const t = tx.data();
+
+    transactionsHTML += `
+
+      <tr>
+
+        <td>${t.type || '-'}</td>
+
+        <td>
+        ₦${Number(t.amount || t.price || 0)
+        .toLocaleString('en-NG')}
+        </td>
+
+        <td>
+        ${t.plan || t.network || t.description || '-'}
+        </td>
+
+        <td>
+        ${
+          t.createdAt?.toDate
+          ?
+          t.createdAt.toDate().toLocaleString()
+          :
+          '-'
+        }
+        </td>
+
+      </tr>
+
+    `;
+
+  });
 
   document.getElementById("userProfile").innerHTML = `
 
@@ -943,18 +1111,65 @@ async function viewUser(id){
 
       <br>
 
-      <p><b>Wallet:</b>
-      ₦${Number(u.wallet || 0).toLocaleString('en-NG')}</p>
+      <p>
+      <b>Wallet:</b>
+      ₦${Number(u.wallet || 0)
+      .toLocaleString('en-NG')}
+      </p>
 
       <br>
 
-      <p><b>Status:</b>
-      ${u.blocked ? 'Blocked':'Active'}</p>
+      <p>
+      <b>Status:</b>
+      ${u.blocked ? 'Blocked':'Active'}
+      </p>
 
       <br>
 
-      <p><b>User ID:</b>
-      ${id}</p>
+      <p>
+      <b>User ID:</b>
+      ${id}
+      </p>
+
+    </div>
+
+    <br>
+
+    <div class="section">
+
+      <h2>User Transactions</h2>
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Description</th>
+            <th>Date</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${
+            transactionsHTML ||
+            `
+            <tr>
+              <td colspan="4">
+              No transactions found
+              </td>
+            </tr>
+            `
+          }
+
+        </tbody>
+
+      </table>
 
     </div>
 
@@ -963,6 +1178,10 @@ async function viewUser(id){
   openModal("userModal");
 
 }
+
+
+
+
 
 async function toggleBlock(id,current){
 
@@ -1605,11 +1824,22 @@ function loadLogs(){
 CHART
 =========================== */
 
+/* ===========================
+CHART
+=========================== */
+
 async function loadChart(){
 
   const days =
   Number(document.getElementById("chartFilter")
   ?.value || 7);
+
+  const now = new Date();
+
+  const startDate =
+  new Date();
+
+  startDate.setDate(now.getDate() - days);
 
   const txSnap =
   await db.collection("transactions").get();
@@ -1626,21 +1856,31 @@ async function loadChart(){
     const date =
     t.createdAt.toDate();
 
+    /* APPLY FILTER */
+
+    if(date < startDate)
+    return;
+
     const key =
     date.toISOString().split('T')[0];
 
+    if(!daily[key]){
+
+      daily[key] = 0;
+
+    }
+
     if(t.type === 'purchase'){
 
-      daily[key] =
-      (daily[key] || 0)
-      + Number(t.price || t.amount || 0);
+      daily[key] +=
+      Number(t.price || t.amount || 0);
 
     }
 
   });
 
   const labels =
-  Object.keys(daily).slice(-days);
+  Object.keys(daily);
 
   const data =
   labels.map(d=>daily[d]);
@@ -1649,7 +1889,9 @@ async function loadChart(){
   document.getElementById("profitChart");
 
   if(profitChart){
+
     profitChart.destroy();
+
   }
 
   profitChart =
@@ -1675,11 +1917,34 @@ async function loadChart(){
 
       }]
 
+    },
+
+    options:{
+
+      responsive:true,
+
+      plugins:{
+        legend:{
+          display:true
+        }
+      }
+
     }
 
   });
 
 }
+
+async function refreshDashboardData(){
+
+  await loadDashboard();
+  await loadChart();
+
+}
+
+
+
+
 
 /* ===========================
 MODAL
