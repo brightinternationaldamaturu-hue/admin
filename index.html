@@ -850,11 +850,16 @@ function loadUsers(){
 
     });
 
-    renderUsers(usersData);
+    // APPLY CURRENT FILTER AFTER RELOAD
+    filterUsers();
 
   });
 
 }
+
+
+
+
 
 function renderUsers(data){
 
@@ -889,22 +894,39 @@ function renderUsers(data){
 
 }
 
+
+
+
+
 function filterUsers(){
 
   const val =
   document.getElementById("userSearch")
-  .value.toLowerCase();
+  .value.toLowerCase().trim();
 
   const filtered =
-  usersData.filter(u=>
-    (u.email || '')
-    .toLowerCase()
-    .includes(val)
-  );
+  usersData.filter(u=>{
+
+    const email =
+    (u.email || '').toLowerCase();
+
+    const wallet =
+    String(u.wallet || '');
+
+    return (
+      email.includes(val) ||
+      wallet.includes(val)
+    );
+
+  });
 
   renderUsers(filtered);
 
 }
+
+
+
+
 
 async function viewUser(id){
 
@@ -974,11 +996,15 @@ function loadTransactions(){
 
     });
 
-    renderTransactions(transactionsData);
+    // APPLY FILTER AFTER SNAPSHOT
+    filterTransactions();
 
   });
 
 }
+
+
+
 
 function renderTransactions(data){
 
@@ -1031,11 +1057,12 @@ function renderTransactions(data){
 
 }
 
+
 function filterTransactions(){
 
   const search =
   document.getElementById("txSearch")
-  .value.toLowerCase();
+  .value.toLowerCase().trim();
 
   const type =
   document.getElementById("txTypeFilter")
@@ -1050,12 +1077,28 @@ function filterTransactions(){
     const voucher =
     (t.voucher || '').toLowerCase();
 
+    const plan =
+    (t.plan || '').toLowerCase();
+
+    const network =
+    (t.network || '').toLowerCase();
+
+    const description =
+    (t.description || '').toLowerCase();
+
+    const amount =
+    String(t.amount || t.price || '');
+
     const matchSearch =
-    email.includes(search) ||
-    voucher.includes(search);
+      email.includes(search) ||
+      voucher.includes(search) ||
+      plan.includes(search) ||
+      network.includes(search) ||
+      description.includes(search) ||
+      amount.includes(search);
 
     const matchType =
-    !type || t.type === type;
+      !type || t.type === type;
 
     return matchSearch && matchType;
 
@@ -1064,6 +1107,8 @@ function filterTransactions(){
   renderTransactions(filtered);
 
 }
+
+
 
 /* ===========================
 CREDIT USER
@@ -1197,7 +1242,6 @@ async function debitUser(){
 /* ===========================
 MANUAL SALES
 =========================== */
-
 function loadManualSales(){
 
   db.collection("manualSales")
@@ -1215,11 +1259,14 @@ function loadManualSales(){
 
     });
 
-    renderManualSales(manualSalesData);
+    // APPLY FILTER AFTER RELOAD
+    filterManualSales();
 
   });
 
 }
+
+
 
 function renderManualSales(data){
 
@@ -1265,22 +1312,41 @@ function renderManualSales(data){
 
 }
 
+
+
+
 function filterManualSales(){
 
   const val =
   document.getElementById("manualSearch")
-  .value.toLowerCase();
+  .value.toLowerCase().trim();
 
   const filtered =
-  manualSalesData.filter(d=>
-    (d.vendor || '')
-    .toLowerCase()
-    .includes(val)
-  );
+  manualSalesData.filter(d=>{
+
+    const vendor =
+    (d.vendor || '').toLowerCase();
+
+    const status =
+    (d.status || '').toLowerCase();
+
+    const amount =
+    String(d.amount || '');
+
+    return (
+      vendor.includes(val) ||
+      status.includes(val) ||
+      amount.includes(val)
+    );
+
+  });
 
   renderManualSales(filtered);
 
 }
+
+
+
 
 async function addManualSale(){
 
