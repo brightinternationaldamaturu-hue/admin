@@ -208,14 +208,17 @@ const firebaseConfig = {
 
 
 
-firebase.initializeApp(firebaseConfig);
+/* FIREBASE INIT */
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 
 const auth = firebase.auth();
+
 auth.setPersistence(
   firebase.auth.Auth.Persistence.LOCAL
 );
-
-
 
 /* ADMIN EMAILS */
 
@@ -226,13 +229,7 @@ const ADMIN_EMAILS = [
 
 /* AUTO LOGIN CHECK */
 
-let authChecked = false;
-
 auth.onAuthStateChanged((user)=>{
-
-  if(authChecked) return;
-
-  authChecked = true;
 
   if(
     user &&
@@ -246,7 +243,6 @@ auth.onAuthStateChanged((user)=>{
   }
 
 });
-
 
 
 
