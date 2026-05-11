@@ -934,28 +934,38 @@ async function loadDashboard(){
     const amount =
     Number(t.amount || t.price || 0);
 
-    if(
-      t.type === 'fund' ||
-      t.type === 'admin-credit'
-    ){
 
-      funding += amount;
-      income += amount;
 
-    }
+    /* FUNDING */
 
-    if(t.type === 'purchase'){
+if(
+  t.type === 'fund' ||
+  t.type === 'admin-credit'
+){
 
-      profit += amount;
-      income += amount;
+  funding += amount;
 
-    }
+  /* MONEY ENTERING BUSINESS */
+  income += amount;
 
-    if(t.type === 'admin-debit'){
+}
 
-      expenditure += amount;
+/* PURCHASE SALES */
 
-    }
+if(t.type === 'purchase'){
+
+  /* SALES COUNTS AS INCOME */
+  income += amount;
+
+}
+
+/* ADMIN DEBIT */
+
+if(t.type === 'admin-debit'){
+
+  expenditure += amount;
+
+}
 
   });
 
@@ -1007,11 +1017,33 @@ async function loadDashboard(){
       expenseDate > endDate
     ) return;
 
-    if(e.type === 'expense'){
+const companyAmount =
+Number(e.amount || 0);
 
-      expenditure += Number(e.amount || 0);
+/* EXPENSE */
 
-    }
+if(e.type === 'expense'){
+
+  expenditure += companyAmount;
+
+}
+
+/* COMPANY INCOME */
+
+if(
+  e.type === 'income' ||
+  e.type === 'profit' ||
+  e.type === 'sale'
+){
+
+  income += companyAmount;
+
+}
+
+
+/* REAL PROFIT */
+
+profit = income - expenditure;
 
   });
 
