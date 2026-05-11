@@ -937,8 +937,7 @@ async function loadDashboard(){
     Number(t.amount || t.price || 0);
 
 
-
-    /* FUNDING */
+/* FUNDING ONLY */
 
 if(
   t.type === 'fund' ||
@@ -947,19 +946,46 @@ if(
 
   funding += amount;
 
-  /* MONEY ENTERING BUSINESS */
-  income += amount;
+}
+
+/* ONLY REAL SALES COUNT AS INCOME */
+
+if(
+  t.type === 'purchase'
+){
+
+  const desc =
+  (
+    t.plan ||
+    t.network ||
+    t.description ||
+    ''
+  ).toLowerCase();
+
+  /* ONLY INCLUDE:
+     - DATA
+     - AIRTIME
+     - VOUCHER
+     - BILL PAYMENT
+  */
+
+  if(
+    desc.includes('data') ||
+    desc.includes('airtime') ||
+    desc.includes('voucher') ||
+    desc.includes('bill')
+  ){
+
+    income += amount;
+
+  }
 
 }
 
-/* PURCHASE SALES */
 
-if(t.type === 'purchase'){
 
-  /* SALES COUNTS AS INCOME */
-  income += amount;
 
-}
+
 
 /* ADMIN DEBIT */
 
@@ -1042,12 +1068,13 @@ if(
 
 }
 
-
+  });
 /* REAL PROFIT */
 
 profit = income - expenditure;
 
-  });
+
+
 
   /* DISPLAY */
 
