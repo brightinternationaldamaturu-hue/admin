@@ -828,16 +828,20 @@ FIREBASE CONFIG
 =========================== */
 
 const firebaseConfig = {
-
-  apiKey: "AIzaSyDaZH5kn_mmxap3jOyw3Yhq55d936Jhl0g",
+  apiKey: "YOUR_API_KEY",
   authDomain: "biva-system.firebaseapp.com",
-  projectId: "biva-system"
-
+  projectId: "biva-system",
+  storageBucket: "biva-system.appspot.com",
+  messagingSenderId: "334844312203",
+  appId: "1:334844312203:web:9898fad9ca50c89ebdb28e"
 };
 
 firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
+
+
+
 
 /* KEEP ADMIN LOGGED IN */
 auth.setPersistence(
@@ -1181,26 +1185,24 @@ profit = income - expenditure;
 USERS
 =========================== */
 
-function loadUsers(){
+async function loadUsers(){
 
-const snapshot =
-await db.collection("users").get();
+  const snapshot =
+  await db.collection("users").get();
 
-    usersData = [];
+  usersData = [];
 
-    snapshot.forEach(doc=>{
+  snapshot.forEach(doc=>{
 
-      usersData.push({
-        id:doc.id,
-        ...doc.data()
-      });
-
+    usersData.push({
+      id:doc.id,
+      ...doc.data()
     });
 
-    // APPLY CURRENT FILTER AFTER RELOAD
-    filterUsers();
-
   });
+
+  // APPLY CURRENT FILTER AFTER RELOAD
+  filterUsers();
 
 }
 
@@ -2258,7 +2260,7 @@ function logout(){
 
   auth.signOut().then(()=>{
 
-    location.href='index.html';
+    location.href='admin.html';
 
   });
 
