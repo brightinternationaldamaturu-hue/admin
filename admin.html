@@ -118,6 +118,120 @@ body{
   font-weight:900;
 }
 
+.topbar{
+  position:relative;
+}
+
+.topbar-left{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.notification-wrapper{
+  position:relative;
+}
+
+.notification-btn{
+  width:58px;
+  height:58px;
+  border:none;
+  border-radius:18px;
+  background:white;
+  box-shadow:var(--shadow);
+  cursor:pointer;
+  font-size:24px;
+  position:relative;
+  transition:.3s;
+}
+
+.notification-btn:hover{
+  transform:translateY(-2px);
+}
+
+.notification-count{
+  position:absolute;
+  top:8px;
+  right:8px;
+  min-width:22px;
+  height:22px;
+  padding:0 6px;
+  border-radius:100px;
+  background:#ff4d4f;
+  color:white;
+  font-size:11px;
+  font-weight:800;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.notification-dropdown{
+  position:absolute;
+  top:70px;
+  right:0;
+  width:360px;
+  max-height:500px;
+  overflow:auto;
+  background:white;
+  border-radius:24px;
+  box-shadow:0 20px 50px rgba(0,0,0,.12);
+  display:none;
+  z-index:99999;
+  border:1px solid #eee;
+}
+
+.notification-dropdown.active{
+  display:block;
+}
+
+.notification-header{
+  padding:18px 20px;
+  font-size:18px;
+  font-weight:800;
+  border-bottom:1px solid #f1f1f1;
+  color:var(--green2);
+}
+
+.notification-item{
+  padding:18px 20px;
+  border-bottom:1px solid #f5f5f5;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.notification-item:hover{
+  background:#f9fffc;
+}
+
+.notification-item h4{
+  font-size:14px;
+  margin-bottom:6px;
+  color:#111827;
+}
+
+.notification-item p{
+  font-size:13px;
+  color:#666;
+  line-height:1.5;
+}
+
+.notification-time{
+  margin-top:8px;
+  font-size:11px;
+  color:#999;
+}
+
+.notification-empty{
+  padding:30px;
+  text-align:center;
+  color:#777;
+  font-size:14px;
+}
+
+
+
+
 .dashboard-filter{
   margin-top:18px;
   display:flex;
@@ -513,9 +627,51 @@ textarea{
 <!-- TOP -->
 <div class="topbar">
 
-  <div style="width:100%;">
+  <div class="topbar-left">
 
     <h1>Dashboard</h1>
+
+  </div>
+
+  <!-- NOTIFICATION BELL -->
+  <div class="notification-wrapper">
+
+    <button class="notification-btn" onclick="toggleNotifications()">
+
+      🔔
+
+      <span class="notification-count" id="notificationCount">
+        0
+      </span>
+
+    </button>
+
+    <div class="notification-dropdown" id="notificationDropdown">
+
+      <div class="notification-header">
+        Notifications
+      </div>
+
+      <div id="notificationList">
+
+        <div class="notification-empty">
+          No notifications yet
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div style="width:100%;">
+
+
+
+
+
 
     <!-- DASHBOARD FILTER -->
     <div class="dashboard-filter">
@@ -903,13 +1059,14 @@ auth.onAuthStateChanged(async(user)=>{
 
   /* LOAD ADMIN DATA */
 
-  loadDashboard();
-  loadUsers();
-  loadTransactions();
-  loadManualSales();
-  loadSupportChats();
-  loadLogs();
-  loadChart();
+loadDashboard();
+loadUsers();
+loadTransactions();
+loadManualSales();
+loadSupportChats();
+loadLogs();
+loadChart();
+loadNotifications();
 
 });
 
@@ -1560,64 +1717,124 @@ CREDIT USER
 
 async function creditUser(){
 
-  const email =
-  document.getElementById("userEmail")
-  .value.trim();
+  try{
 
-  const amount =
-  Number(document.getElementById("creditAmount")
-  .value);
+    const email =
+    document.getElementById("userEmail")
+    .value.trim().toLowerCase();
 
-  if(!email || !amount){
-    alert("Fill all fields");
-    return;
-  }
-
-  const snap =
-  await db.collection("users")
-  .where("email","==",email)
-  .limit(1)
-  .get();
-
-  if(snap.empty){
-    alert("User not found");
-    return;
-  }
-
-  const userDoc = snap.docs[0];
-
-  await db.runTransaction(async(transaction)=>{
-
-    const ref =
-    db.collection("users")
-    .doc(userDoc.id);
-
-    const user =
-    await transaction.get(ref);
-
-    const balance =
-    Number(user.data().wallet || 0);
-
-    transaction.update(ref,{
-      wallet: balance + amount
-    });
-
-    transaction.set(
-      db.collection("transactions").doc(),
-      {
-        userId:userDoc.id,
-        email,
-        amount,
-        type:"admin-credit",
-        createdAt:firebase.firestore.FieldValue.serverTimestamp()
-      }
+    const amount =
+    Number(
+      document.getElementById("creditAmount").value
     );
 
-  });
+    if(!email || amount <= 0){
 
-  alert("User credited");
+      alert("Enter valid email and amount");
+      return;
+
+    }
+
+    const snap =
+    await db.collection("users")
+    .where("email","==",email)
+    .limit(1)
+    .get();
+
+    if(snap.empty){
+
+      alert("User not found");
+      return;
+
+    }
+
+    const userDoc = snap.docs[0];
+
+    await db.runTransaction(async(transaction)=>{
+
+      const userRef =
+      db.collection("users").doc(userDoc.id);
+
+      const userSnap =
+      await transaction.get(userRef);
+
+      const currentWallet =
+      Number(userSnap.data().wallet || 0);
+
+      const newBalance =
+      currentWallet + amount;
+
+      /* UPDATE WALLET */
+
+      transaction.update(userRef,{
+        wallet:newBalance
+      });
+
+      /* SAVE TRANSACTION */
+
+      transaction.set(
+        db.collection("transactions").doc(),
+        {
+          userId:userDoc.id,
+          email,
+          amount,
+          balanceBefore:currentWallet,
+          balanceAfter:newBalance,
+          type:"admin-credit",
+          description:"Admin credited user wallet",
+          createdAt:
+          firebase.firestore.FieldValue.serverTimestamp()
+        }
+      );
+
+      /* SAVE ADMIN LOG */
+
+      transaction.set(
+        db.collection("adminLogs").doc(),
+        {
+          adminEmail:auth.currentUser.email,
+          action:"Credit User",
+          details:`₦${amount.toLocaleString('en-NG')} credited to ${email}`,
+          createdAt:
+          firebase.firestore.FieldValue.serverTimestamp()
+        }
+      );
+
+      /* SAVE NOTIFICATION */
+
+      transaction.set(
+        db.collection("adminNotifications").doc(),
+        {
+          title:"User Credited",
+          message:`₦${amount.toLocaleString('en-NG')} credited to ${email}`,
+          createdAt:
+          firebase.firestore.FieldValue.serverTimestamp()
+        }
+      );
+
+    });
+
+    document.getElementById("creditAmount").value = "";
+
+    alert("User credited successfully");
+
+    loadDashboard();
+
+  }catch(error){
+
+    console.error(error);
+    alert(error.message);
+
+  }
 
 }
+
+
+
+
+
+
+
 
 /* ===========================
 DEBIT USER
@@ -1625,90 +1842,331 @@ DEBIT USER
 
 async function debitUser(){
 
-  const email =
-  document.getElementById("userEmail")
-  .value.trim();
+  try{
 
-  const amount =
-  Number(document.getElementById("creditAmount")
-  .value);
+    const email =
+    document.getElementById("userEmail")
+    .value.trim().toLowerCase();
 
-  const snap =
-  await db.collection("users")
-  .where("email","==",email)
-  .limit(1)
-  .get();
-
-  if(snap.empty){
-    alert("User not found");
-    return;
-  }
-
-  const userDoc = snap.docs[0];
-
-  await db.runTransaction(async(transaction)=>{
-
-    const ref =
-    db.collection("users")
-    .doc(userDoc.id);
-
-    const user =
-    await transaction.get(ref);
-
-    const balance =
-    Number(user.data().wallet || 0);
-
-    if(balance < amount){
-      throw new Error("Insufficient balance");
-    }
-
-    transaction.update(ref,{
-      wallet: balance - amount
-    });
-
-    transaction.set(
-      db.collection("transactions").doc(),
-      {
-        userId:userDoc.id,
-        email,
-        amount,
-        type:"admin-debit",
-        createdAt:firebase.firestore.FieldValue.serverTimestamp()
-      }
+    const amount =
+    Number(
+      document.getElementById("creditAmount").value
     );
 
-  });
+    if(!email || amount <= 0){
 
-  alert("User debited");
+      alert("Enter valid email and amount");
+      return;
 
-}
+    }
 
-/* ===========================
-MANUAL SALES
-=========================== */
-function loadManualSales(){
+    const snap =
+    await db.collection("users")
+    .where("email","==",email)
+    .limit(1)
+    .get();
 
-  db.collection("manualSales")
-  .orderBy("createdAt","desc")
-  .onSnapshot(snapshot=>{
+    if(snap.empty){
 
-    manualSalesData = [];
+      alert("User not found");
+      return;
 
-    snapshot.forEach(doc=>{
+    }
 
-      manualSalesData.push({
-        id:doc.id,
-        ...doc.data()
+    const userDoc = snap.docs[0];
+
+    await db.runTransaction(async(transaction)=>{
+
+      const userRef =
+      db.collection("users").doc(userDoc.id);
+
+      const userSnap =
+      await transaction.get(userRef);
+
+      const currentWallet =
+      Number(userSnap.data().wallet || 0);
+
+      if(currentWallet < amount){
+
+        throw new Error("Insufficient wallet balance");
+
+      }
+
+      const newBalance =
+      currentWallet - amount;
+
+      /* UPDATE WALLET */
+
+      transaction.update(userRef,{
+        wallet:newBalance
       });
+
+      /* SAVE TRANSACTION */
+
+      transaction.set(
+        db.collection("transactions").doc(),
+        {
+          userId:userDoc.id,
+          email,
+          amount,
+          balanceBefore:currentWallet,
+          balanceAfter:newBalance,
+          type:"admin-debit",
+          description:"Admin debited user wallet",
+          createdAt:
+          firebase.firestore.FieldValue.serverTimestamp()
+        }
+      );
+
+      /* SAVE ADMIN LOG */
+
+      transaction.set(
+        db.collection("adminLogs").doc(),
+        {
+          adminEmail:auth.currentUser.email,
+          action:"Debit User",
+          details:`₦${amount.toLocaleString('en-NG')} debited from ${email}`,
+          createdAt:
+          firebase.firestore.FieldValue.serverTimestamp()
+        }
+      );
+
+      /* SAVE NOTIFICATION */
+
+      transaction.set(
+        db.collection("adminNotifications").doc(),
+        {
+          title:"User Debited",
+          message:`₦${amount.toLocaleString('en-NG')} debited from ${email}`,
+          createdAt:
+          firebase.firestore.FieldValue.serverTimestamp()
+        }
+      );
 
     });
 
-    // APPLY FILTER AFTER RELOAD
-    filterManualSales();
+    document.getElementById("creditAmount").value = "";
 
-  });
+    alert("User debited successfully");
+
+    loadDashboard();
+
+  }catch(error){
+
+    console.error(error);
+    alert(error.message);
+
+  }
 
 }
+
+
+
+/* ===========================
+ADD MANUAL SALE
+=========================== */
+
+async function addManualSale(){
+
+  try{
+
+    const vendor =
+    document.getElementById("vendorName")
+    .value.trim();
+
+    const amount =
+    Number(
+      document.getElementById("manualAmount").value
+    );
+
+    const qty =
+    Number(
+      document.getElementById("manualQty").value
+    );
+
+    if(!vendor || amount <= 0 || qty <= 0){
+
+      alert("Fill all fields correctly");
+      return;
+
+    }
+
+    await db.collection("manualSales").add({
+
+      vendor,
+      amount,
+      qty,
+
+      total:amount * qty,
+
+      status:"pending",
+
+      approved:false,
+
+      createdBy:auth.currentUser.email,
+
+      createdAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    /* SAVE ADMIN LOG */
+
+    await db.collection("adminLogs").add({
+
+      adminEmail:auth.currentUser.email,
+
+      action:"Add Manual Sale",
+
+      details:
+      `${vendor} manual sale added - ₦${amount.toLocaleString('en-NG')}`,
+
+      createdAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    /* SAVE NOTIFICATION */
+
+    await db.collection("adminNotifications").add({
+
+      title:"Manual Sale Added",
+
+      message:
+      `${vendor} added manual sale of ₦${amount.toLocaleString('en-NG')}`,
+
+      createdAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    document.getElementById("vendorName").value = "";
+    document.getElementById("manualAmount").value = "";
+    document.getElementById("manualQty").value = "";
+
+    alert("Manual sale added successfully");
+
+    loadDashboard();
+
+  }catch(error){
+
+    console.error(error);
+    alert(error.message);
+
+  }
+
+}
+
+
+
+/* ===========================
+APPROVE MANUAL SALE
+=========================== */
+
+async function approveManual(id){
+
+  try{
+
+    const saleRef =
+    db.collection("manualSales").doc(id);
+
+    const saleDoc =
+    await saleRef.get();
+
+    if(!saleDoc.exists){
+
+      alert("Manual sale not found");
+      return;
+
+    }
+
+    const sale = saleDoc.data();
+
+    if(sale.status === "approved"){
+
+      alert("Already approved");
+      return;
+
+    }
+
+    await saleRef.update({
+
+      status:"approved",
+
+      approved:true,
+
+      approvedBy:auth.currentUser.email,
+
+      approvedAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    /* SAVE COMPANY INCOME */
+
+    await db.collection("companyTransactions").add({
+
+      type:"income",
+
+      category:"manual-sale",
+
+      amount:Number(sale.amount || 0),
+
+      description:
+      `Manual sale approved for ${sale.vendor}`,
+
+      createdAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    /* SAVE ADMIN LOG */
+
+    await db.collection("adminLogs").add({
+
+      adminEmail:auth.currentUser.email,
+
+      action:"Approve Manual Sale",
+
+      details:
+      `${sale.vendor} sale approved`,
+
+      createdAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    /* SAVE NOTIFICATION */
+
+    await db.collection("adminNotifications").add({
+
+      title:"Manual Sale Approved",
+
+      message:
+      `${sale.vendor} manual sale approved`,
+
+      createdAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    alert("Manual sale approved successfully");
+
+    loadDashboard();
+
+  }catch(error){
+
+    console.error(error);
+    alert(error.message);
+
+  }
+
+}
+
+
+
+
+
 
 
 
@@ -1792,50 +2250,6 @@ function filterManualSales(){
 
 
 
-async function addManualSale(){
-
-  const vendor =
-  document.getElementById("vendorName").value;
-
-  const amount =
-  Number(document.getElementById("manualAmount")
-  .value);
-
-  const qty =
-  Number(document.getElementById("manualQty")
-  .value);
-
-  if(!vendor || !amount || !qty){
-    alert("Fill all fields");
-    return;
-  }
-
-  await db.collection("manualSales").add({
-
-    vendor,
-    amount,
-    qty,
-    status:"pending",
-    createdAt:
-    firebase.firestore.FieldValue.serverTimestamp()
-
-  });
-
-  alert("Manual sale added");
-
-}
-
-async function approveManual(id){
-
-  await db.collection("manualSales")
-  .doc(id)
-  .update({
-    status:"approved"
-  });
-
-  alert("Approved");
-
-}
 
 /* ===========================
 SUPPORT CHAT
@@ -1926,78 +2340,211 @@ async function openChat(chatId){
 
 }
 
+
+
+
+
+
+/* ===========================
+SEND SUPPORT REPLY
+=========================== */
+
 async function sendReply(){
 
-  const msg =
-  document.getElementById("adminReply")
-  .value.trim();
+  try{
 
-  if(!msg) return;
+    const message =
+    document.getElementById("adminReply")
+    .value.trim();
 
-  await db.collection("supportChats")
-  .doc(currentChatId)
-  .collection("messages")
-  .add({
+    if(!message){
 
-    sender:"admin",
-    message:msg,
-    createdAt:
-    firebase.firestore.FieldValue.serverTimestamp()
+      alert("Type a reply");
+      return;
 
-  });
+    }
 
-  await db.collection("supportChats")
-  .doc(currentChatId)
-  .update({
+    if(!currentChatId){
 
-    lastMessage:msg,
-    updatedAt:
-    firebase.firestore.FieldValue.serverTimestamp()
+      alert("No active chat");
+      return;
 
-  });
+    }
 
-  document.getElementById("adminReply").value = '';
+    /* SEND MESSAGE */
+
+    await db.collection("supportChats")
+    .doc(currentChatId)
+    .collection("messages")
+    .add({
+
+      sender:"admin",
+
+      senderEmail:auth.currentUser.email,
+
+      message,
+
+      createdAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    /* UPDATE CHAT */
+
+    await db.collection("supportChats")
+    .doc(currentChatId)
+    .update({
+
+      lastMessage:message,
+
+      lastSender:"admin",
+
+      updatedAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    /* SAVE ADMIN LOG */
+
+    await db.collection("adminLogs").add({
+
+      adminEmail:auth.currentUser.email,
+
+      action:"Support Reply",
+
+      details:
+      `Admin replied to support chat ${currentChatId}`,
+
+      createdAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    /* SAVE NOTIFICATION */
+
+    await db.collection("adminNotifications").add({
+
+      title:"Support Reply Sent",
+
+      message:"Admin replied to support chat",
+
+      createdAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    document.getElementById("adminReply").value = "";
+
+  }catch(error){
+
+    console.error(error);
+    alert(error.message);
+
+  }
 
 }
 
+
+
+
+
+
+
 /* ===========================
-EXPENSE
+ADD EXPENSE
 =========================== */
 
 async function addExpense(){
 
-  const type =
-  document.getElementById("expenseType")
-  .value;
+  try{
 
-  const amount =
-  Number(document.getElementById("expenseAmount")
-  .value);
+    const category =
+    document.getElementById("expenseType").value;
 
-  const note =
-  document.getElementById("expenseNote")
-  .value;
+    const amount =
+    Number(
+      document.getElementById("expenseAmount").value
+    );
 
-  if(!amount || !note){
-    alert("Fill all fields");
-    return;
+    const note =
+    document.getElementById("expenseNote")
+    .value.trim();
+
+    if(amount <= 0 || !note){
+
+      alert("Fill all fields correctly");
+      return;
+
+    }
+
+    await db.collection("companyTransactions").add({
+
+      type:"expense",
+
+      category,
+
+      amount,
+
+      description:note,
+
+      createdBy:auth.currentUser.email,
+
+      createdAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    /* SAVE ADMIN LOG */
+
+    await db.collection("adminLogs").add({
+
+      adminEmail:auth.currentUser.email,
+
+      action:"Add Expense",
+
+      details:
+      `₦${amount.toLocaleString('en-NG')} added as ${category} expense`,
+
+      createdAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    /* SAVE NOTIFICATION */
+
+    await db.collection("adminNotifications").add({
+
+      title:"Expense Added",
+
+      message:
+      `₦${amount.toLocaleString('en-NG')} added as ${category} expense`,
+
+      createdAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    document.getElementById("expenseAmount").value = "";
+    document.getElementById("expenseNote").value = "";
+
+    alert("Expense added successfully");
+
+    loadDashboard();
+
+  }catch(error){
+
+    console.error(error);
+    alert(error.message);
+
   }
 
-  await db.collection("companyTransactions")
-  .add({
-
-    type:"expense",
-    category:type,
-    amount,
-    description:note,
-    createdAt:
-    firebase.firestore.FieldValue.serverTimestamp()
-
-  });
-
-  alert("Expense added");
-
 }
+
+
+
+
+
+
 
 /* ===========================
 LOGS
@@ -2245,6 +2792,92 @@ function openModal(id){
 function closeModal(id){
   document.getElementById(id).style.display='none';
 }
+
+
+
+
+/* ===========================
+NOTIFICATIONS
+=========================== */
+
+let notificationCount = 0;
+
+function toggleNotifications(){
+
+  document
+  .getElementById("notificationDropdown")
+  .classList.toggle("active");
+
+}
+
+/* LOAD NOTIFICATIONS */
+
+function loadNotifications(){
+
+  const list =
+  document.getElementById("notificationList");
+
+  db.collection("adminNotifications")
+  .orderBy("createdAt","desc")
+  .limit(30)
+  .onSnapshot(snapshot=>{
+
+    list.innerHTML = '';
+
+    notificationCount = snapshot.size;
+
+    document.getElementById(
+      "notificationCount"
+    ).innerText = notificationCount;
+
+    if(snapshot.empty){
+
+      list.innerHTML = `
+      <div class="notification-empty">
+        No notifications yet
+      </div>
+      `;
+
+      return;
+
+    }
+
+    snapshot.forEach(doc=>{
+
+      const n = doc.data();
+
+      list.innerHTML += `
+
+      <div class="notification-item">
+
+        <h4>${n.title || 'New Activity'}</h4>
+
+        <p>${n.message || ''}</p>
+
+        <div class="notification-time">
+
+          ${
+            n.createdAt?.toDate
+            ?
+            n.createdAt.toDate()
+            .toLocaleString()
+            :
+            ''
+          }
+
+        </div>
+
+      </div>
+
+      `;
+
+    });
+
+  });
+
+}
+
+
 
 /* ===========================
 LOGOUT
