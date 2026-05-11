@@ -30,6 +30,7 @@
   --shadow:0 10px 30px rgba(0,0,0,0.06);
 }
 
+
 *{
   margin:0;
   padding:0;
@@ -42,6 +43,13 @@ body{
   color:#111827;
   overflow-x:hidden;
 }
+
+html{
+  scroll-behavior:smooth;
+}
+
+
+
 
 .app{
   display:flex;
@@ -62,6 +70,19 @@ body{
   overflow-y:auto;
   z-index:999;
 }
+
+
+.sidebar::-webkit-scrollbar{
+  width:5px;
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,.3);
+  border-radius:20px;
+}
+
+
+
 
 .logo{
   font-size:28px;
@@ -177,7 +198,7 @@ body{
   border-radius:24px;
   box-shadow:0 20px 50px rgba(0,0,0,.12);
   display:none;
-  z-index:99999;
+  z-index:999999;
   border:1px solid #eee;
 }
 
@@ -326,6 +347,18 @@ body{
 .card{
   background:white;
   border-radius:22px;
+.card{
+  transition:.3s ease;
+}
+
+.card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 15px 35px rgba(0,0,0,.08);
+}
+
+
+
+
 
   /* REDUCED HEIGHT */
   padding:18px 20px;
@@ -393,7 +426,8 @@ body{
   padding:24px;
   margin-bottom:25px;
   box-shadow:var(--shadow);
-  overflow:auto;
+  overflow-x:auto;
+  overflow-y:hidden;
 }
 
 .section h2{
@@ -548,24 +582,124 @@ textarea{
 
 /* MOBILE */
 
+/* =========================
+RESPONSIVE LAYOUT FIX
+========================= */
+
 @media(max-width:950px){
+
+  .app{
+    display:flex;
+    flex-direction:column;
+  }
 
   .sidebar{
     width:100%;
-    height:auto;
-    position:relative;
+    position:sticky;
+    top:0;
+    left:0;
+    bottom:auto;
+    z-index:9999;
+
+    padding:16px;
+    overflow-x:auto;
+    overflow-y:hidden;
+
+    display:flex;
+    flex-direction:column;
+
+    background:linear-gradient(90deg,var(--green),#006d44);
+  }
+
+  .logo{
+    margin-bottom:15px;
+    font-size:24px;
+    text-align:center;
+  }
+
+  .menu{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    padding-bottom:5px;
+
+    scrollbar-width:none;
+  }
+
+  .menu::-webkit-scrollbar{
+    display:none;
+  }
+
+  .menu button{
+    min-width:max-content;
+    margin-bottom:0;
+    border-radius:14px;
+    padding:12px 16px;
+    white-space:nowrap;
+    font-size:14px;
   }
 
   .main{
-    margin-left:0;
     width:100%;
+    margin-left:0;
+    padding:16px;
   }
 
-  .app{
-    display:block;
+  .topbar{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .topbar h1{
+    font-size:28px;
+  }
+.topbar h1{
+  background:linear-gradient(90deg,var(--green2),#00c97f);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+  .notification-fixed{
+    position:absolute;
+    top:0;
+    right:0;
+  }
+
+  .notification-dropdown{
+    width:100%;
+    max-width:340px;
+    right:0;
+  }
+
+  .searchBox{
+    width:100%;
+    min-width:100%;
+  }
+
+  table{
+    min-width:700px;
+  }
+
+  .section{
+    padding:18px;
+    border-radius:22px;
+  }
+
+  .card{
+    min-height:95px;
+    padding:16px;
+  }
+
+  .stat-value{
+    font-size:22px;
   }
 
 }
+
+
+
+
+
 
 /* PROFIT CHART SIZE */
 #profitChart{
@@ -2261,6 +2395,38 @@ function filterManualSales(){
 }
 
 
+/* ===========================
+LOAD MANUAL SALES
+=========================== */
+
+function loadManualSales(){
+
+  db.collection("manualSales")
+  .orderBy("createdAt","desc")
+  .onSnapshot(snapshot=>{
+
+    manualSalesData = [];
+
+    snapshot.forEach(doc=>{
+
+      manualSalesData.push({
+        id: doc.id,
+        ...doc.data()
+      });
+
+    });
+
+    filterManualSales();
+
+  }, error => {
+
+    console.error("Manual sales error:", error);
+
+  });
+
+}
+
+
 
 
 
@@ -2605,6 +2771,8 @@ function loadLogs(){
 
 }
 
+
+
 /* ===========================
 CHART
 =========================== */
@@ -2813,6 +2981,27 @@ function closeModal(id){
 NOTIFICATIONS
 =========================== */
 
+document.addEventListener("click", function(e){
+
+  const wrapper =
+  document.querySelector(".notification-wrapper");
+
+  const dropdown =
+  document.getElementById("notificationDropdown");
+
+  if(
+    wrapper &&
+    !wrapper.contains(e.target)
+  ){
+    dropdown.classList.remove("active");
+  }
+
+});
+
+
+
+
+
 let notificationCount = 0;
 
 function toggleNotifications(){
@@ -2822,6 +3011,12 @@ function toggleNotifications(){
   .classList.toggle("active");
 
 }
+
+
+
+
+
+
 
 /* LOAD NOTIFICATIONS */
 
@@ -2835,13 +3030,27 @@ function loadNotifications(){
   .limit(30)
   .onSnapshot(snapshot=>{
 
+    console.log("Notifications loaded:", snapshot.size);
+
     list.innerHTML = '';
+
+    /* COUNT */
 
     notificationCount = snapshot.size;
 
-    document.getElementById(
-      "notificationCount"
-    ).innerText = notificationCount;
+const badge =
+document.getElementById("notificationCount");
+
+badge.innerText = notificationCount;
+
+badge.style.display =
+notificationCount > 0
+? "flex"
+: "none";
+
+
+
+    /* EMPTY */
 
     if(snapshot.empty){
 
@@ -2855,9 +3064,16 @@ function loadNotifications(){
 
     }
 
+    /* RENDER */
+
     snapshot.forEach(doc=>{
 
       const n = doc.data();
+
+      const time =
+      n.createdAt?.toDate
+      ? n.createdAt.toDate().toLocaleString()
+      : 'Just now';
 
       list.innerHTML += `
 
@@ -2868,16 +3084,7 @@ function loadNotifications(){
         <p>${n.message || ''}</p>
 
         <div class="notification-time">
-
-          ${
-            n.createdAt?.toDate
-            ?
-            n.createdAt.toDate()
-            .toLocaleString()
-            :
-            ''
-          }
-
+          ${time}
         </div>
 
       </div>
@@ -2886,9 +3093,24 @@ function loadNotifications(){
 
     });
 
+  }, error => {
+
+    console.error(
+      "Notification error:",
+      error
+    );
+
+    list.innerHTML = `
+    <div class="notification-empty">
+      Failed to load notifications
+    </div>
+    `;
+
   });
 
 }
+
+
 
 
 
