@@ -3026,31 +3026,25 @@ function loadNotifications(){
   document.getElementById("notificationList");
 
   db.collection("adminNotifications")
-  .orderBy("createdAt","desc")
+  .orderBy("createdAt", "desc")
   .limit(30)
-  .onSnapshot(snapshot=>{
+  .onSnapshot(snapshot => {
 
     console.log("Notifications loaded:", snapshot.size);
 
     list.innerHTML = '';
 
-    /* COUNT */
-
     notificationCount = snapshot.size;
 
-const badge =
-document.getElementById("notificationCount");
+    const badge =
+    document.getElementById("notificationCount");
 
-badge.innerText = notificationCount;
+    badge.innerText = notificationCount;
 
-badge.style.display =
-notificationCount > 0
-? "flex"
-: "none";
-
-
-
-    /* EMPTY */
+    badge.style.display =
+    notificationCount > 0
+    ? "flex"
+    : "none";
 
     if(snapshot.empty){
 
@@ -3061,25 +3055,21 @@ notificationCount > 0
       `;
 
       return;
-
     }
 
-    /* RENDER */
-
-    snapshot.forEach(doc=>{
+    snapshot.forEach(doc => {
 
       const n = doc.data();
 
       const time =
-      n.createdAt?.toDate
+      n.createdAt && n.createdAt.toDate
       ? n.createdAt.toDate().toLocaleString()
       : 'Just now';
 
       list.innerHTML += `
-
       <div class="notification-item">
 
-        <h4>${n.title || 'New Activity'}</h4>
+        <h4>${n.title || 'Notification'}</h4>
 
         <p>${n.message || ''}</p>
 
@@ -3088,24 +3078,28 @@ notificationCount > 0
         </div>
 
       </div>
-
       `;
-
     });
 
   }, error => {
 
-    console.error(
-      "Notification error:",
-      error
-    );
+    console.error("Notification error:", error);
+
+    let errorMessage = "Failed to load notifications";
+
+    if(error.code === "permission-denied"){
+      errorMessage = "Firestore permission denied";
+    }
+
+    if(error.code === "failed-precondition"){
+      errorMessage = "Firestore index required";
+    }
 
     list.innerHTML = `
     <div class="notification-empty">
-      Failed to load notifications
+      ${errorMessage}
     </div>
     `;
-
   });
 
 }
