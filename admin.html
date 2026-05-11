@@ -836,7 +836,9 @@ const firebaseConfig = {
   appId: "1:334844312203:web:9898fad9ca50c89ebdb28e"
 };
 
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 
 const auth = firebase.auth();
 
@@ -875,15 +877,7 @@ let profitChart;
 /* ===========================
 AUTH
 =========================== */
-
-let initialized = false;
-
 auth.onAuthStateChanged(async(user)=>{
-
-  if(initialized) return;
-
-  initialized = true;
-
   if(!user){
 
     window.location.replace("index.html");
@@ -2260,7 +2254,7 @@ function logout(){
 
   auth.signOut().then(()=>{
 
-    location.href='admin.html';
+    location.href='index.html';
 
   });
 
