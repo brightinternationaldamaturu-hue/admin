@@ -1367,15 +1367,16 @@ if(
 
 /* COUNT ALL SALES AS INCOME */
 
-if(
-  t.type === 'purchase' ||
-  t.type === 'airtime' ||
-  t.type === 'data' ||
-  t.type === 'electricity'
-){
+const countedTypes = [
+  'airtime',
+  'data',
+  'electricity',
+  'tv',
+  'education'
+];
 
+if(countedTypes.includes(t.type)){
   income += amount;
-
 }
 
 
@@ -2877,12 +2878,20 @@ else if(filter !== 'custom'){
 
     }
 
-    if(t.type === 'purchase'){
+const chartTypes = [
+  'airtime',
+  'data',
+  'electricity',
+  'tv',
+  'education'
+];
 
-      daily[key] +=
-      Number(t.price || t.amount || 0);
+if(chartTypes.includes(t.type)){
 
-    }
+  daily[key] +=
+  Number(t.price || t.amount || 0);
+
+}
 
   });
 
