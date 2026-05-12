@@ -188,18 +188,47 @@ html{
 }
 
 .notification-dropdown{
-  position:absolute;
-  top:70px;
-  right:auto;
-  width:auto;
-  max-height:auto;
-  overflow:auto;
+
+  position:fixed;
+
+  top:85px;
+  right:20px;
+
+  width:420px;
+  max-width:95vw;
+
+  max-height:80vh;
+  overflow-y:auto;
+
   background:white;
-  border-radius:24px;
-  box-shadow:0 20px 50px rgba(0,0,0,.12);
+
+  border-radius:28px;
+
+  box-shadow:
+  0 25px 60px rgba(0,0,0,.18);
+
   display:none;
-  z-index:999999;
-  border:1px solid #eee;
+
+  z-index:999999999999;
+
+  border:1px solid #f1f1f1;
+
+  animation:notificationFade .25s ease;
+}
+
+
+@keyframes notificationFade{
+
+  from{
+    opacity:0;
+    transform:translateY(-10px) scale(.98);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+
 }
 
 .notification-dropdown.active{
@@ -249,6 +278,33 @@ html{
   color:#777;
   font-size:14px;
 }
+
+
+.notification-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.clear-notification-btn{
+  border:none;
+  background:#ffefef;
+  color:#ff4d4f;
+  padding:10px 14px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.clear-notification-btn:hover{
+  background:#ff4d4f;
+  color:white;
+  transform:translateY(-1px);
+}
+
 
 
 
@@ -667,21 +723,36 @@ RESPONSIVE LAYOUT FIX
     z-index:999999999;
   }
 
-  .notification-dropdown{
-    position:fixed;
-    top:75px;
-    right:10px;
+.notification-dropdown{
 
-    width:92vw;
-    max-width:360px;
+  position:fixed;
 
-    max-height:75vh;
-    overflow-y:auto;
+  top:80px;
+  right:12px;
 
-    z-index:999999999;
+  width:95vw;
+  max-width:420px;
 
-    border-radius:22px;
-  }
+  max-height:78vh;
+
+  overflow-y:auto;
+
+  z-index:999999999999;
+
+  border-radius:24px;
+
+}
+
+
+.notification-dropdown::-webkit-scrollbar{
+  width:6px;
+}
+
+.notification-dropdown::-webkit-scrollbar-thumb{
+  background:#d1d5db;
+  border-radius:20px;
+}
+
 
 
 
@@ -886,39 +957,6 @@ DELETE MODAL
 
 </nav>
 
-<!-- NOTIFICATION BELL -->
-<div class="notification-fixed">
-
-  <div class="notification-wrapper">
-
-    <button class="notification-btn" onclick="toggleNotifications()">
-
-      🔔
-
-      <span class="notification-count" id="notificationCount">
-        0
-      </span>
-
-    </button>
-
-    <div class="notification-dropdown" id="notificationDropdown">
-
-      <div class="notification-header">
-        Notifications
-      </div>
-
-      <div id="notificationList">
-
-        <div class="notification-empty">
-          No notifications yet
-	</div>
-	</div>
-	</div>
-	</div>
-	</div>
-
-
-
   <div class="logo">
     BIVA <span>ADMIN</span>
   </div>
@@ -956,6 +994,56 @@ DELETE MODAL
 </div>
 
 
+
+
+
+<!-- NOTIFICATION BELL -->
+<div class="notification-fixed">
+
+  <div class="notification-wrapper">
+
+    <button class="notification-btn" onclick="toggleNotifications()">
+
+      🔔
+
+      <span class="notification-count" id="notificationCount">
+        0
+      </span>
+
+    </button>
+
+    <div class="notification-dropdown" id="notificationDropdown">
+
+
+
+<div class="notification-header">
+
+  <div class="notification-top">
+
+    <span>Notifications</span>
+
+    <button class="clear-notification-btn"
+    onclick="clearAllNotifications()">
+
+      Clear All
+
+    </button>
+
+  </div>
+
+</div>
+
+
+
+      <div id="notificationList">
+
+        <div class="notification-empty">
+          No notifications yet
+	</div>
+	</div>
+	</div>
+	</div>
+	</div>
 
 
 
@@ -2145,6 +2233,55 @@ async function creditUser(){
 
 
 
+/* CLEAR ALL NOTIFICATIONS */
+
+async function clearAllNotifications(){
+
+  try{
+
+openClearNotificationModal();
+return;
+
+
+
+    const snapshot =
+    await db.collection("adminNotifications").get();
+
+    const batch = db.batch();
+
+    snapshot.forEach(doc=>{
+
+      batch.delete(doc.ref);
+
+    });
+
+    await batch.commit();
+
+    document.getElementById("notificationCount")
+    .style.display = "none";
+
+    document.getElementById("notificationList")
+    .innerHTML = `
+      <div class="notification-empty">
+        No notifications yet
+      </div>
+    `;
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
+
+}
+
+
+
+
+
+
 
 
 
@@ -2346,6 +2483,8 @@ async function addManualSale(){
 
       message:
       `${vendor} added manual sale of ₦${amount.toLocaleString('en-NG')}`,
+	
+      read:false,
 
       createdAt:
       firebase.firestore.FieldValue.serverTimestamp()
@@ -2473,6 +2612,10 @@ async function confirmDeleteTransaction(){
       message:
       `${tx.email || 'User'} transaction deleted successfully`,
 
+
+      read:false,
+
+
       createdAt:
       firebase.firestore.FieldValue.serverTimestamp()
 
@@ -2599,6 +2742,10 @@ async function approveManual(id){
 
       message:
       `${sale.vendor} manual sale approved`,
+
+
+      read:false,
+
 
       createdAt:
       firebase.firestore.FieldValue.serverTimestamp()
@@ -2915,6 +3062,10 @@ async function sendReply(){
 
       message:"Admin replied to support chat",
 
+
+      read:false,
+
+
       createdAt:
       firebase.firestore.FieldValue.serverTimestamp()
 
@@ -3005,6 +3156,8 @@ async function addExpense(){
 
       message:
       `₦${amount.toLocaleString('en-NG')} added as ${category} expense`,
+
+      read:false,
 
       createdAt:
       firebase.firestore.FieldValue.serverTimestamp()
@@ -3344,25 +3497,16 @@ function loadNotifications(){
   db.collection("adminNotifications")
   .orderBy("createdAt", "desc")
   .limit(30)
-  .onSnapshot(snapshot => {
-
-    console.log("Notifications loaded:", snapshot.size);
+  .onSnapshot(async snapshot => {
 
     list.innerHTML = '';
 
-    notificationCount = snapshot.size;
-
-    const badge =
-    document.getElementById("notificationCount");
-
-    badge.innerText = notificationCount;
-
-    badge.style.display =
-    notificationCount > 0
-    ? "flex"
-    : "none";
+    let unreadCount = 0;
 
     if(snapshot.empty){
+
+      document.getElementById("notificationCount")
+      .style.display = "none";
 
       list.innerHTML = `
       <div class="notification-empty">
@@ -3377,13 +3521,19 @@ function loadNotifications(){
 
       const n = doc.data();
 
+      if(!n.read){
+        unreadCount++;
+      }
+
       const time =
-      n.createdAt && n.createdAt.toDate
+      n.createdAt?.toDate
       ? n.createdAt.toDate().toLocaleString()
       : 'Just now';
 
       list.innerHTML += `
-      <div class="notification-item">
+
+      <div class="notification-item"
+      onclick="markNotificationRead('${doc.id}')">
 
         <h4>${n.title || 'Notification'}</h4>
 
@@ -3394,29 +3544,109 @@ function loadNotifications(){
         </div>
 
       </div>
+
       `;
     });
 
-  }, error => {
+    const badge =
+    document.getElementById("notificationCount");
 
-    console.error("Notification error:", error);
+    badge.innerText = unreadCount;
 
-    let errorMessage = "Failed to load notifications";
+    badge.style.display =
+    unreadCount > 0
+    ? "flex"
+    : "none";
 
-    if(error.code === "permission-denied"){
-      errorMessage = "Firestore permission denied";
-    }
-
-    if(error.code === "failed-precondition"){
-      errorMessage = "Firestore index required";
-    }
-
-    list.innerHTML = `
-    <div class="notification-empty">
-      ${errorMessage}
-    </div>
-    `;
   });
+
+}
+
+
+
+
+async function markNotificationRead(id){
+
+  try{
+
+    await db.collection("adminNotifications")
+    .doc(id)
+    .update({
+      read:true
+    });
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+
+
+/* ===========================
+CLEAR NOTIFICATION MODAL
+=========================== */
+
+function openClearNotificationModal(){
+
+  document
+  .getElementById("clearNotificationModal")
+  .classList.add("active");
+
+}
+
+function closeClearNotificationModal(){
+
+  document
+  .getElementById("clearNotificationModal")
+  .classList.remove("active");
+
+}
+
+/* ===========================
+CONFIRM CLEAR NOTIFICATIONS
+=========================== */
+
+async function confirmClearNotifications(){
+
+  try{
+
+    const snapshot =
+    await db.collection("adminNotifications").get();
+
+    const batch = db.batch();
+
+    snapshot.forEach(doc=>{
+
+      batch.delete(doc.ref);
+
+    });
+
+    await batch.commit();
+
+    document.getElementById("notificationCount")
+    .style.display = "none";
+
+    document.getElementById("notificationList")
+    .innerHTML = `
+
+      <div class="notification-empty">
+        No notifications yet
+      </div>
+
+    `;
+
+    closeClearNotificationModal();
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
 
 }
 
@@ -3479,6 +3709,50 @@ function logout(){
   </div>
 
 </div>
+
+
+
+<!-- CLEAR NOTIFICATION MODAL -->
+
+<div class="delete-modal" id="clearNotificationModal">
+
+  <div class="delete-modal-content">
+
+    <div class="delete-icon">
+      🔔
+    </div>
+
+    <h2>Clear Notifications?</h2>
+
+    <p>
+      This will permanently remove all notifications from the admin panel.
+    </p>
+
+    <div class="delete-actions">
+
+      <button
+        class="delete-cancel"
+        onclick="closeClearNotificationModal()">
+
+        Cancel
+
+      </button>
+
+      <button
+        class="delete-confirm"
+        onclick="confirmClearNotifications()">
+
+        Clear All
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
 
 
 </body>
