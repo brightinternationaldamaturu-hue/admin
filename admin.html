@@ -933,6 +933,90 @@ DELETE MODAL
   }
 
 }
+
+
+
+
+/* =========================
+REALTIME POPUP NOTIFICATION
+========================= */
+
+.live-popup-container{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:9999999999999;
+
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.live-popup{
+  width:360px;
+  max-width:92vw;
+
+  background:white;
+
+  border-radius:24px;
+
+  padding:18px;
+
+  box-shadow:
+  0 20px 50px rgba(0,0,0,.18);
+
+  border-left:6px solid var(--green2);
+
+  animation:popupSlide .4s ease;
+
+  overflow:hidden;
+}
+
+.live-popup h4{
+  font-size:16px;
+  color:#111827;
+  margin-bottom:8px;
+}
+
+.live-popup p{
+  font-size:14px;
+  color:#666;
+  line-height:1.5;
+}
+
+.live-popup-time{
+  margin-top:10px;
+  font-size:12px;
+  color:#999;
+}
+
+@keyframes popupSlide{
+
+  from{
+    opacity:0;
+    transform:translateX(120px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateX(0);
+  }
+
+}
+
+.live-popup.hide{
+  animation:popupHide .35s ease forwards;
+}
+
+@keyframes popupHide{
+
+  to{
+    opacity:0;
+    transform:translateX(120px);
+  }
+
+}
+
 </style>
 
 
@@ -3490,6 +3574,8 @@ function toggleNotifications(){
 
 /* LOAD NOTIFICATIONS */
 
+let firstNotificationLoad = true;
+
 function loadNotifications(){
 
   const list =
@@ -3498,7 +3584,7 @@ function loadNotifications(){
   db.collection("adminNotifications")
   .orderBy("createdAt", "desc")
   .limit(30)
-  .onSnapshot(async snapshot => {
+  .onSnapshot(snapshot => {
 
     list.innerHTML = '';
 
@@ -3517,6 +3603,21 @@ function loadNotifications(){
 
       return;
     }
+
+    snapshot.docChanges().forEach(change => {
+
+      if(
+        change.type === "added" &&
+        !firstNotificationLoad
+      ){
+
+        const data = change.doc.data();
+
+        showRealtimePopup(data);
+
+      }
+
+    });
 
     snapshot.forEach(doc => {
 
@@ -3559,9 +3660,73 @@ function loadNotifications(){
     ? "flex"
     : "none";
 
+    firstNotificationLoad = false;
+
   });
 
 }
+
+
+
+
+
+/* ===========================
+REALTIME POPUP + SOUND
+=========================== */
+
+function showRealtimePopup(data){
+
+  const container =
+  document.getElementById("livePopupContainer");
+
+  const popup =
+  document.createElement("div");
+
+  popup.className = "live-popup";
+
+  popup.innerHTML = `
+
+    <h4>
+      ${data.title || 'Notification'}
+    </h4>
+
+    <p>
+      ${data.message || ''}
+    </p>
+
+    <div class="live-popup-time">
+      ${new Date().toLocaleTimeString()}
+    </div>
+
+  `;
+
+  container.prepend(popup);
+
+  /* PLAY SOUND */
+
+  const sound =
+  document.getElementById("notificationSound");
+
+  sound.currentTime = 0;
+
+  sound.play().catch(()=>{});
+
+  /* AUTO REMOVE */
+
+  setTimeout(()=>{
+
+    popup.classList.add("hide");
+
+    setTimeout(()=>{
+
+      popup.remove();
+
+    },300);
+
+  },5000);
+
+}
+
 
 
 
@@ -3754,6 +3919,17 @@ function logout(){
 </div>
 
 
+
+
+<!-- LIVE POPUPS -->
+<div class="live-popup-container" id="livePopupContainer"></div>
+
+<!-- NOTIFICATION SOUND -->
+<audio id="notificationSound" preload="auto">
+  <source
+    src="https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3"
+    type="audio/mpeg">
+</audio>
 
 
 </body>
