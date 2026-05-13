@@ -1578,7 +1578,7 @@ else if(filter !== 'custom'){
 /* FUNDING ONLY */
 
 if(
-  t.type === 'fund' ||
+  t.type === 'funding' ||
   t.type === 'admin-credit'
 ){
 
@@ -1595,8 +1595,8 @@ const countedTypes = [
   'data',
   'electricity',
   'tv',
-  'education',
-  'purchase'
+  'purchase',
+  'education'
 ];
 
 if(countedTypes.includes(t.type)){
