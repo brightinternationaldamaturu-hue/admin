@@ -482,8 +482,18 @@ html{
   padding:24px;
   margin-bottom:25px;
   box-shadow:var(--shadow);
+
+  width:100%;
+
   overflow-x:auto;
   overflow-y:hidden;
+
+  -webkit-overflow-scrolling:touch;
+}
+
+.section table{
+  width:max-content;
+  min-width:100%;
 }
 
 .section h2{
@@ -491,6 +501,16 @@ html{
   margin-bottom:18px;
   font-size:24px;
 }
+
+.section::-webkit-scrollbar{
+  height:6px;
+}
+
+.section::-webkit-scrollbar-thumb{
+  background:#d1d5db;
+  border-radius:20px;
+}
+
 
 /* TABLE */
 
@@ -517,6 +537,9 @@ td{
 tr:hover{
   background:#f9fffc;
 }
+
+
+
 
 /* FORM */
 
@@ -761,10 +784,18 @@ RESPONSIVE LAYOUT FIX
     min-width:100%;
   }
 
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+@media(max-width:768px){
+
   table{
-    min-width:700px;
+    min-width:900px;
   }
 
+}
   .section{
     padding:18px;
     border-radius:22px;
@@ -1017,6 +1048,119 @@ REALTIME POPUP NOTIFICATION
 
 }
 
+
+
+/* RECEIPT MODAL */
+.receipt-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:999999;
+  padding:15px;
+}
+
+.receipt-box{
+  background:#fff;
+  width:100%;
+  max-width:500px;
+  border-radius:20px;
+  overflow:hidden;
+}
+
+.receipt-header{
+  padding:15px 20px;
+  background:#0c513f;
+  color:#fff;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.receipt-header span{
+  cursor:pointer;
+  font-size:20px;
+}
+
+#receiptContent{
+  padding:20px;
+}
+
+.receipt-row{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:15px;
+  gap:10px;
+}
+
+.receipt-label{
+  font-weight:600;
+  color:#666;
+}
+
+.receipt-value{
+  text-align:right;
+  font-weight:500;
+  word-break:break-word;
+}
+
+.receipt-success{
+  background:#e8fff1;
+  color:green;
+  padding:10px;
+  border-radius:10px;
+  text-align:center;
+  margin-bottom:20px;
+  font-weight:700;
+}
+
+
+
+
+/* MOBILE TABLE FIX */
+.table-responsive{
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  border-radius:15px;
+}
+
+/* TABLE */
+.transactions-table{
+  width:100%;
+  min-width:900px;
+  border-collapse:collapse;
+}
+
+/* CELLS */
+.transactions-table td,
+.transactions-table th{
+  padding:12px;
+  white-space:nowrap;
+  font-size:14px;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+
+  .transactions-table{
+    min-width:750px;
+  }
+
+  .transactions-table td,
+  .transactions-table th{
+    font-size:12px;
+    padding:10px;
+  }
+
+  .btn{
+    padding:6px 10px;
+    font-size:12px;
+  }
+
+}
 </style>
 
 
@@ -1255,6 +1399,8 @@ REALTIME POPUP NOTIFICATION
 <input type="text" id="userSearch" placeholder="Search user email..." onkeyup="filterUsers()">
 </div>
 
+
+
 <table>
 
 <thead>
@@ -1273,6 +1419,10 @@ REALTIME POPUP NOTIFICATION
 </div>
 
 </div>
+
+
+
+
 
 <!-- TRANSACTIONS -->
 <div id="transactionsPage" class="page">
@@ -1293,7 +1443,11 @@ REALTIME POPUP NOTIFICATION
 
 </div>
 
-<table>
+
+
+<div class="table-responsive">
+
+<table class="transactions-table">
 
 <thead>
 <tr>
@@ -1308,7 +1462,15 @@ REALTIME POPUP NOTIFICATION
 
 <tbody id="transactionsTable"></tbody>
 
-</table>
+  </table>
+
+</div>
+
+
+
+
+
+
 
 </div>
 
@@ -2106,49 +2268,60 @@ function renderTransactions(data){
       badgeClass = 'debit';
     }
 
-table.innerHTML += `
-<tr>
+    table.innerHTML += `
+    <tr>
 
-  <td>${t.email || '-'}</td>
+      <td>${t.email || '-'}</td>
 
-  <td>
-    <span class="badge ${badgeClass}">
-      ${t.type || '-'}
-    </span>
-  </td>
+      <td>
+        <span class="badge ${badgeClass}">
+          ${t.type || '-'}
+        </span>
+      </td>
 
-  <td>
-    ${t.plan || t.network || t.description || '-'}
-  </td>
+      <td>
+        ${t.plan || t.network || t.description || '-'}
+      </td>
 
-  <td>
-    ₦${Number(t.amount || t.price || 0).toLocaleString('en-NG')}
-  </td>
+      <td>
+        ₦${Number(t.amount || t.price || 0)
+          .toLocaleString('en-NG')}
+      </td>
 
-  <td>
-    ${t.createdAt?.toDate ?
-      t.createdAt.toDate().toLocaleString()
-      : '-'}
-  </td>
+      <td>
+        ${t.createdAt?.toDate ?
+          t.createdAt.toDate().toLocaleString()
+          : '-'}
+      </td>
 
-  <td>
+      <td style="display:flex; gap:8px;">
 
-    <button
-      class="btn red"
-      onclick="deleteTransaction('${t.id}')">
+        <button
+          class="btn"
+          onclick='viewTransactionReceipt(${JSON.stringify(t)})'>
 
-      Delete
+          View
 
-    </button>
+        </button>
 
-  </td>
+        <button
+          class="btn red"
+          onclick="deleteTransaction('${t.id}')">
 
-</tr>
-`;
+          Delete
+
+        </button>
+
+      </td>
+
+    </tr>
+    `;
 
   });
 
 }
+
+
 
 
 function filterTransactions(){
@@ -3854,7 +4027,138 @@ function logout(){
 
 }
 
+
+
+
+function viewTransactionReceipt(t){
+
+  document.getElementById(
+    "receiptModal"
+  ).style.display = "flex";
+
+  document.getElementById(
+    "receiptContent"
+  ).innerHTML = `
+
+    <div class="receipt-success">
+      Transaction Successful
+    </div>
+
+    <div class="receipt-row">
+      <div class="receipt-label">Email</div>
+      <div class="receipt-value">
+        ${t.email || '-'}
+      </div>
+    </div>
+
+    <div class="receipt-row">
+      <div class="receipt-label">Type</div>
+      <div class="receipt-value">
+        ${t.type || '-'}
+      </div>
+    </div>
+
+    <div class="receipt-row">
+      <div class="receipt-label">Network</div>
+      <div class="receipt-value">
+        ${t.network || '-'}
+      </div>
+    </div>
+
+    <div class="receipt-row">
+      <div class="receipt-label">Plan</div>
+      <div class="receipt-value">
+        ${t.plan || '-'}
+      </div>
+    </div>
+
+    <div class="receipt-row">
+      <div class="receipt-label">Amount</div>
+      <div class="receipt-value">
+        ₦${Number(t.amount || t.price || 0)
+          .toLocaleString('en-NG')}
+      </div>
+    </div>
+
+    <div class="receipt-row">
+      <div class="receipt-label">Phone</div>
+      <div class="receipt-value">
+        ${t.phone || '-'}
+      </div>
+    </div>
+
+    <div class="receipt-row">
+      <div class="receipt-label">Status</div>
+      <div class="receipt-value">
+        ${t.status || 'Successful'}
+      </div>
+    </div>
+
+    <div class="receipt-row">
+      <div class="receipt-label">Date</div>
+      <div class="receipt-value">
+        ${t.createdAt?.toDate ?
+          t.createdAt.toDate().toLocaleString()
+          : '-'}
+      </div>
+    </div>
+
+    <div class="receipt-row">
+      <div class="receipt-label">Transaction ID</div>
+      <div class="receipt-value">
+        ${t.id || '-'}
+      </div>
+    </div>
+
+  `;
+
+}
+
+function closeReceiptModal(){
+
+  document.getElementById(
+    "receiptModal"
+  ).style.display = "none";
+
+}
+
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 <!-- DELETE CONFIRM MODAL -->
@@ -3950,6 +4254,29 @@ function logout(){
     src="https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3"
     type="audio/mpeg">
 </audio>
+
+
+
+
+<!-- TRANSACTION RECEIPT MODAL -->
+<div id="receiptModal" class="receipt-modal">
+
+  <div class="receipt-box">
+
+    <div class="receipt-header">
+      <h2>Transaction Receipt</h2>
+
+      <span onclick="closeReceiptModal()">
+        ✖
+      </span>
+    </div>
+
+    <div id="receiptContent"></div>
+
+  </div>
+
+</div>
+
 
 
 </body>
