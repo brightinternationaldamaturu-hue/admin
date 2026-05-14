@@ -2158,29 +2158,40 @@ function filterTransactions(){
   transactionsData.filter(t=>{
 
     const email =
-    (t.email || '').toLowerCase();
+    String(t.email || '')
+    .toLowerCase();
 
     const voucher =
-    (t.voucher || '').toLowerCase();
+    String(t.voucher || '')
+    .toLowerCase();
 
     const plan =
-    (t.plan || '').toLowerCase();
+    String(t.plan || '')
+    .toLowerCase();
 
     const network =
-    (t.network || '').toLowerCase();
+    String(t.network || '')
+    .toLowerCase();
 
     const description =
-    (t.description || '').toLowerCase();
+    String(t.description || '')
+    .toLowerCase();
 
     const amount =
     String(t.amount || t.price || '');
 
     const matchSearch =
+
       email.includes(search) ||
+
       voucher.includes(search) ||
+
       plan.includes(search) ||
+
       network.includes(search) ||
+
       description.includes(search) ||
+
       amount.includes(search);
 
     const matchType =
@@ -2193,6 +2204,8 @@ function filterTransactions(){
   renderTransactions(filtered);
 
 }
+
+
 
 
 
