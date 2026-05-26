@@ -1161,6 +1161,165 @@ REALTIME POPUP NOTIFICATION
   }
 
 }
+
+
+
+
+
+/* =========================
+FULL USER TRANSACTION TABLE
+========================= */
+
+.full-transaction-section{
+  width:100%;
+  overflow:hidden;
+}
+
+.full-width-table{
+  width:100%;
+  overflow-x:auto;
+}
+
+.user-transactions-table{
+  width:100%;
+  min-width:1200px;
+  border-collapse:collapse;
+}
+
+.user-transactions-table th,
+.user-transactions-table td{
+  padding:14px;
+  text-align:left;
+  white-space:nowrap;
+}
+
+/* BETTER MODAL WIDTH */
+
+#userModal .modal-content{
+
+  width:95%;
+  max-width:1400px;
+  max-height:90vh;
+
+  overflow-y:auto;
+
+  border-radius:24px;
+
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+  #userModal .modal-content{
+
+    width:100%;
+    height:100vh;
+    max-height:100vh;
+    border-radius:0;
+
+  }
+
+}
+
+
+
+
+/* =========================
+USER PROFILE
+========================= */
+
+.profile-card{
+
+  background:#fff;
+  border-radius:24px;
+  padding:25px;
+  margin-bottom:25px;
+
+  box-shadow:0 10px 30px rgba(0,0,0,.05);
+
+}
+
+.profile-header{
+
+  display:flex;
+  align-items:center;
+  gap:18px;
+
+  margin-bottom:25px;
+
+}
+
+.profile-avatar{
+
+  width:70px;
+  height:70px;
+
+  border-radius:50%;
+
+  background:linear-gradient(
+    135deg,
+    #00a86b,
+    #007e52
+  );
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:30px;
+  color:#fff;
+
+}
+
+.profile-email{
+
+  color:#667085;
+  margin-top:4px;
+
+}
+
+.profile-grid{
+
+  display:grid;
+
+  grid-template-columns:
+  repeat(auto-fit,minmax(220px,1fr));
+
+  gap:16px;
+
+}
+
+.profile-item{
+
+  background:#f9fafb;
+
+  border-radius:18px;
+
+  padding:18px;
+
+}
+
+.profile-item span{
+
+  display:block;
+
+  color:#667085;
+
+  font-size:13px;
+
+  margin-bottom:8px;
+
+}
+
+.profile-item strong{
+
+  font-size:15px;
+  color:#101828;
+
+  word-break:break-word;
+
+}
 </style>
 
 
@@ -1451,12 +1610,18 @@ REALTIME POPUP NOTIFICATION
 
 <thead>
 <tr>
-<th>Email</th>
-<th>Type</th>
-<th>Description</th>
-<th>Amount</th>
-<th>Date</th>
-<th>Action</th>
+
+  <th>Type</th>
+  <th>Amount</th>
+  <th>Before</th>
+  <th>After</th>
+  <th>Phone</th>
+  <th>Voucher</th>
+  <th>Network</th>
+  <th>Status</th>
+  <th>Date</th>
+  <th>Action</th>
+
 </tr>
 </thead>
 
@@ -2096,34 +2261,60 @@ async function viewUser(id){
 
     const t = tx.data();
 
-    transactionsHTML += `
+transactionsHTML += `
 
-      <tr>
+<tr>
 
-        <td>${t.type || '-'}</td>
+  <td>
+    ${t.type || '-'}
+  </td>
 
-        <td>
-        ₦${Number(t.amount || t.price || 0)
-        .toLocaleString('en-NG')}
-        </td>
+  <td>
+    ₦${Number(t.amount || t.price || 0)
+    .toLocaleString('en-NG')}
+  </td>
 
-        <td>
-        ${t.plan || t.network || t.description || '-'}
-        </td>
+  <td>
+    ${t.phone || '-'}
+  </td>
 
-        <td>
-        ${
-          t.createdAt?.toDate
-          ?
-          t.createdAt.toDate().toLocaleString()
-          :
-          '-'
-        }
-        </td>
+  <td style="max-width:150px;word-break:break-all;">
+    ${t.voucher || '-'}
+  </td>
 
-      </tr>
+  <td>
+    ${t.network || '-'}
+  </td>
 
-    `;
+  <td>
+    ${t.status || 'Successful'}
+  </td>
+
+  <td>
+    ${
+      t.createdAt?.toDate
+      ?
+      t.createdAt.toDate().toLocaleString()
+      :
+      '-'
+    }
+  </td>
+
+  <td>
+
+<button
+  class="btn green"
+  onclick='viewTransactionReceipt(${JSON.stringify(t)})'>
+
+  Receipt
+
+</button>
+
+  </td>
+
+</tr>
+
+`;
 
   });
 
@@ -2131,50 +2322,116 @@ async function viewUser(id){
 
     <div class="card">
 
-      <h3>${u.email || '-'}</h3>
+<div class="profile-card">
 
-      <br>
+  <div class="profile-header">
 
-      <p>
-      <b>Wallet:</b>
-      ₦${Number(u.wallet || 0)
-      .toLocaleString('en-NG')}
-      </p>
+    <div class="profile-avatar">
+      👤
+    </div>
 
-      <br>
+    <div>
 
-      <p>
-      <b>Status:</b>
-      ${u.blocked ? 'Blocked':'Active'}
-      </p>
+      <h2>
+        ${u.fullName || 'BIVA User'}
+      </h2>
 
-      <br>
-
-      <p>
-      <b>User ID:</b>
-      ${id}
+      <p class="profile-email">
+        ${u.email || '-'}
       </p>
 
     </div>
 
+  </div>
+
+  <div class="profile-grid">
+
+    <div class="profile-item">
+      <span>Wallet Balance</span>
+
+      <strong>
+        ₦${Number(u.wallet || 0)
+        .toLocaleString('en-NG')}
+      </strong>
+    </div>
+
+    <div class="profile-item">
+      <span>Phone Number</span>
+
+      <strong>
+        ${u.phone || '-'}
+      </strong>
+    </div>
+
+    <div class="profile-item">
+      <span>Status</span>
+
+      <strong>
+        ${u.blocked ? '❌ Blocked' : '✅ Active'}
+      </strong>
+    </div>
+
+    <div class="profile-item">
+      <span>User ID</span>
+
+      <strong>
+        ${id}
+      </strong>
+    </div>
+
+    <div class="profile-item">
+      <span>Account Created</span>
+
+      <strong>
+
+        ${
+          u.createdAt?.toDate
+          ?
+          u.createdAt.toDate()
+          .toLocaleString()
+          :
+          '-'
+        }
+
+      </strong>
+    </div>
+
+    <div class="profile-item">
+      <span>Transaction PIN</span>
+
+      <strong>
+        ${u.pin ? '✅ Set' : '❌ Not Set'}
+      </strong>
+    </div>
+
+  </div>
+
+</div>
+
     <br>
 
-    <div class="section">
+<div class="section full-transaction-section">
 
-      <h2>User Transactions</h2>
+  <h2>User Transactions</h2>
 
-      <table>
+  <div class="table-responsive full-width-table">
+
+    <table class="user-transactions-table">
 
         <thead>
 
-          <tr>
+<tr>
 
-            <th>Type</th>
-            <th>Amount</th>
-            <th>Description</th>
-            <th>Date</th>
+  <th>Type</th>
+  <th>Amount</th>
+  <th>Phone</th>
+  <th>Voucher</th>
+  <th>Network</th>
+  <th>Status</th>
+  <th>Date</th>
+  <th>Action</th>
 
-          </tr>
+</tr>
 
         </thead>
 
@@ -2195,6 +2452,7 @@ async function viewUser(id){
 
       </table>
 
+    </div>
     </div>
 
   `;
@@ -2278,6 +2536,18 @@ function renderTransactions(data){
           ${t.type || '-'}
         </span>
       </td>
+
+
+      <td>
+  ₦${Number(t.balanceBefore || 0)
+  .toLocaleString('en-NG')}
+</td>
+
+<td>
+  ₦${Number(t.balanceAfter || 0)
+  .toLocaleString('en-NG')}
+</td>
+
 
       <td>
         ${t.plan || t.network || t.description || '-'}
