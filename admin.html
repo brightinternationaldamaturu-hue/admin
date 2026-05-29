@@ -2520,6 +2520,10 @@ function renderTransactions(data){
       badgeClass = 'purchase';
     }
 
+    if(t.type === 'voucher'){
+      badgeClass = 'purchase';
+    }
+
     if(t.type === 'admin-debit'){
       badgeClass = 'debit';
     }
