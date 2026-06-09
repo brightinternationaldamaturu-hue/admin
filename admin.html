@@ -1320,6 +1320,32 @@ USER PROFILE
   word-break:break-word;
 
 }
+
+
+
+.activity-feed{
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:10px;
+
+}
+
+.activity-item{
+
+  background:#fff;
+
+  padding:12px;
+
+  border-radius:10px;
+
+  border-left:4px solid #22c55e;
+
+  font-size:14px;
+
+}
 </style>
 
 
@@ -1355,10 +1381,12 @@ USER PROFILE
     <button class="active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
     <button onclick="showPage('users',this)">👥 Users</button>
     <button onclick="showPage('transactions',this)">💳 Transactions</button>
+    <button onclick="showPage('failed',this)"> 🚨 Transaction Issues </button>
     <button onclick="showPage('manual',this)">🧾 Manual Sales</button>
     <button onclick="showPage('support',this)">💬 Support</button>
     <button onclick="showPage('expenses',this)">💸 Expenses</button>
     <button onclick="showPage('logs',this)">📜 Admin Logs</button>
+    <button onclick="showPage('broadcast',this)" > 📢 Broadcast </button>
     <button onclick="logout()">🚪 Logout</button>
   </div>
 
@@ -1511,6 +1539,75 @@ USER PROFILE
 
 
 
+
+
+  <div class="card">
+  <div class="stat-title">
+    Pending Transactions
+  </div>
+
+  <div
+    class="stat-value"
+    id="pendingTransactions"
+  >
+    0
+  </div>
+</div>
+
+<div class="card">
+  <div class="stat-title">
+    Failed Transactions
+  </div>
+
+  <div
+    class="stat-value"
+    id="failedTransactions"
+  >
+    0
+  </div>
+</div>
+
+
+
+
+
+<div class="card">
+
+  <div class="stat-title">
+    Today's Transactions
+  </div>
+
+  <div
+    class="stat-value"
+    id="todayTransactions"
+  >
+    0
+  </div>
+
+</div>
+
+
+
+
+<div class="card">
+
+  <div class="stat-title">
+    Today's Signups
+  </div>
+
+  <div
+    class="stat-value"
+    id="todaySignups"
+  >
+    0
+  </div>
+
+</div>
+
+
+
+
+
   <div class="card">
     <div class="stat-title">Total Users</div>
     <div class="stat-value" id="totalUsers">0</div>
@@ -1532,6 +1629,11 @@ USER PROFILE
 </div>
 
 </div>
+
+
+
+
+
 
 <!-- USERS -->
 <div id="usersPage" class="page">
@@ -1586,6 +1688,28 @@ USER PROFILE
 <!-- TRANSACTIONS -->
 <div id="transactionsPage" class="page">
 
+
+  
+<div class="section">
+
+  <h2>
+    Recent Activity
+  </h2>
+
+  <div
+    id="activityFeed"
+    class="activity-feed"
+  >
+
+    Loading...
+
+  </div>
+
+</div>
+
+
+
+
 <div class="section">
 
 <div class="flex">
@@ -1628,16 +1752,44 @@ USER PROFILE
   </table>
 
 </div>
-
-
-
-
-
-
-
 </div>
 
 </div>
+
+
+
+
+<!-- Failed Transactions -->
+<div id="failedPage" class="page">
+
+  <div class="section">
+
+    <h2>Failed Transactions</h2>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody id="failedTransactionsTable">
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+
 
 <!-- MANUAL -->
 <div id="manualPage" class="page">
@@ -1716,6 +1868,44 @@ USER PROFILE
 
 </div>
 
+
+
+
+<div id="broadcastPage" class="page">
+
+  <div class="section">
+
+    <h2>
+      Broadcast Notification
+    </h2>
+
+    <input
+      id="broadcastTitle"
+      type="text"
+      placeholder="Notification Title"
+    >
+
+    <textarea
+      id="broadcastMessage"
+      rows="6"
+      placeholder="Write notification..."
+    ></textarea>
+
+    <button
+      class="btn green"
+      onclick="sendBroadcast()"
+    >
+      Send Notification
+    </button>
+
+  </div>
+
+</div>
+
+
+
+
+
 <!-- LOGS -->
 <div id="logsPage" class="page">
 
@@ -1745,6 +1935,12 @@ USER PROFILE
 </div>
 
 </div>
+</div>
+</div>
+
+
+
+
 
 <!-- USER MODAL -->
 <div class="modal" id="userModal">
@@ -1779,6 +1975,133 @@ USER PROFILE
 </div>
 
 </div>
+
+
+
+<!-- CREDIT WALLET MODAL -->
+
+<div
+  class="modal"
+  id="creditWalletModal"
+>
+
+  <div class="modal-content">
+
+    <span
+      class="close"
+      onclick="
+      closeModal(
+      'creditWalletModal'
+      )
+      "
+    >
+      &times;
+    </span>
+
+    <h2>
+      Credit User Wallet
+    </h2>
+
+    <input
+      type="number"
+      id="creditWalletAmount"
+      placeholder="Amount"
+    >
+
+    <select
+      id="creditWalletType"
+    >
+
+      <option value="fund">
+        Funding
+      </option>
+
+      <option value="bonus">
+        Bonus
+      </option>
+
+      <option value="cashback">
+        Cashback
+      </option>
+
+      <option value="refund">
+        Refund
+      </option>
+
+      <option value="adjustment">
+        Adjustment
+      </option>
+
+    </select>
+
+    <textarea
+      id="creditWalletDescription"
+      placeholder="Description"
+    ></textarea>
+
+    <button
+      class="btn green"
+      onclick="submitWalletCredit()"
+    >
+      Credit User
+    </button>
+
+  </div>
+
+</div>
+
+
+
+
+
+<!-- DEBIT WALLET MODAL -->
+
+<div
+  class="modal"
+  id="debitWalletModal"
+>
+
+  <div class="modal-content">
+
+    <span
+      class="close"
+      onclick="
+      closeModal(
+      'debitWalletModal'
+      )
+      "
+    >
+      &times;
+    </span>
+
+    <h2>
+      Debit User Wallet
+    </h2>
+
+    <input
+      type="number"
+      id="debitWalletAmount"
+      placeholder="Amount"
+    >
+
+    <textarea
+      id="debitWalletReason"
+      placeholder="Reason"
+    ></textarea>
+
+    <button
+      class="btn orange"
+      onclick="submitWalletDebit()"
+    >
+      Debit User
+    </button>
+
+  </div>
+
+</div>
+
+
+
 
 <script>
 
@@ -1831,6 +2154,7 @@ let usersData = [];
 let transactionsData = [];
 let manualSalesData = [];
 let currentChatId = null;
+let selectedUserId = null;
 let profitChart;
 
 /* ===========================
@@ -1863,13 +2187,9 @@ auth.onAuthStateChanged(async(user)=>{
   /* LOAD ADMIN DATA */
 
 loadDashboard();
-loadUsers();
-loadTransactions();
-loadManualSales();
-loadSupportChats();
-loadLogs();
 loadChart();
 loadNotifications();
+loadActivityFeed();
 
 });
 
@@ -1890,7 +2210,36 @@ function showPage(page,btn){
 
   btn.classList.add('active');
 
+  if(page === "users"){
+    loadUsers();
+  }
+
+  if(page === "transactions"){
+    loadTransactions();
+  }
+
+  if(page === "failed"){
+    loadFailedTransactions();
+  }
+
+  if(page === "manual"){
+    loadManualSales();
+  }
+
+  if(page === "support"){
+    loadSupportChats();
+  }
+
+  if(page === "logs"){
+    loadLogs();
+  }
+
 }
+
+
+
+
+
 
 /* ===========================
 DASHBOARD
@@ -1955,24 +2304,59 @@ else if(filter !== 'custom'){
 
   }
 
-  let funding = 0;
-  let profit = 0;
-  let pending = 0;
-  let income = 0;
-  let expenditure = 0;
+let funding = 0;
+let profit = 0;
+let pending = 0;
+let income = 0;
+let expenditure = 0;
+
+let pendingTransactions = 0;
+let failedTransactions = 0;
+let todayTransactions = 0;
+let todaySignups = 0;
 
   /* USERS */
+const today =
+new Date();
+
+today.setHours(
+  0,0,0,0
+);
 
   const usersSnap =
-  await db.collection("users").get();
+  await db.collection("users")
+.limit(100)
+.get();;
 
   document.getElementById("totalUsers").innerText =
   usersSnap.size;
 
+  usersSnap.forEach(doc=>{
+
+  const u = doc.data();
+
+  if(
+    u.createdAt &&
+    u.createdAt.toDate &&
+    u.createdAt.toDate() >= today
+  ){
+
+    todaySignups++;
+
+  }
+
+});
+
+
   /* TRANSACTIONS */
 
   const txSnap =
-  await db.collection("transactions").get();
+  await db.collection("transactions")
+.orderBy("createdAt","desc")
+.limit(200)
+.get();;
+
+
 
   txSnap.forEach(doc=>{
 
@@ -1984,6 +2368,15 @@ else if(filter !== 'custom'){
     const txDate =
     t.createdAt.toDate();
 
+
+    if(txDate >= today){
+
+  todayTransactions++;
+
+}
+
+
+
     if(txDate < startDate || txDate > endDate)
     return;
 
@@ -1991,10 +2384,23 @@ else if(filter !== 'custom'){
     Number(t.amount || t.price || 0);
 
 
+
+    if(t.status === "pending"){
+  pendingTransactions++;
+}
+
+if(t.status === "failed"){
+  failedTransactions++;
+}
+
+
 /* FUNDING ONLY */
 
 if(
   t.type === 'funding' ||
+  t.type === 'fund' ||
+  t.type === 'deposit' ||
+  t.type === 'wallet-funding' ||
   t.type === 'admin-credit'
 ){
 
@@ -2130,6 +2536,26 @@ profit = income - expenditure;
   document.getElementById("totalExpenditure").innerText =
   "₦" + expenditure.toLocaleString('en-NG');
 
+  document.getElementById(
+  "pendingTransactions"
+).innerText =
+pendingTransactions;
+
+document.getElementById(
+  "failedTransactions"
+).innerText =
+failedTransactions;
+
+document.getElementById(
+  "todayTransactions"
+).innerText =
+todayTransactions;
+
+document.getElementById(
+  "todaySignups"
+).innerText =
+todaySignups;
+
 }
 
 
@@ -2145,7 +2571,10 @@ USERS
 async function loadUsers(){
 
   const snapshot =
-  await db.collection("users").get();
+  await db.collection("users")
+.limit(100)
+.get();
+
 
   usersData = [];
 
@@ -2253,6 +2682,75 @@ async function viewUser(id){
   .orderBy("createdAt","desc")
   .limit(20)
   .get();
+
+
+  let totalFunding = 0;
+let totalPurchases = 0;
+
+txSnap.forEach(tx=>{
+
+  const t = tx.data();
+
+  const amount =
+  Number(
+    t.amount ||
+    t.price ||
+    0
+  );
+
+const type =
+String(
+  t.type || ""
+)
+.toLowerCase()
+.trim();
+
+if(
+  [
+    "fund",
+    "funding",
+    "deposit",
+    "wallet-funding",
+    "admin-credit"
+  ].includes(type)
+){
+
+  totalFunding += amount;
+
+}
+
+const purchaseTypes = [
+
+  "airtime",
+
+  "data",
+
+  "electricity",
+
+  "tv",
+
+  "education",
+
+  "purchase",
+
+  "voucher",
+
+  "exam",
+
+  "result-checker"
+
+];
+
+if(
+  purchaseTypes.includes(t.type)
+){
+
+  totalPurchases += amount;
+
+}
+
+});
+
 
   let transactionsHTML = '';
 
@@ -2399,15 +2897,143 @@ transactionsHTML += `
       <span>Transaction PIN</span>
 
       <strong>
-        ${u.pin ? '✅ Set' : '❌ Not Set'}
+        ${u.transactionPin ? 'Created' : '❌ Not Set'}
       </strong>
     </div>
+
+
+
+    <div class="profile-item">
+
+  <span>
+    Cashback Balance
+  </span>
+
+  <strong>
+    ₦${Number(
+      u.cashbackBalance || 0
+    ).toLocaleString('en-NG')}
+  </strong>
+
+</div>
+
+<div class="profile-item">
+
+  <span>
+    Referral Code
+  </span>
+
+  <strong>
+    ${u.referralCode || '-'}
+
+  </strong>
+
+</div>
+
+<div class="profile-item">
+
+  <span>
+    Referred By
+  </span>
+
+  <strong>
+    ${u.referredBy || '-'}
+
+  </strong>
+
+</div>
+
 
   </div>
 
 </div>
 
-    <br>
+
+<div class="profile-actions">
+
+<button
+  class="btn green"
+  onclick="
+  openCreditWalletModal(
+    '${id}'
+  )
+  "
+>
+  Credit Wallet
+</button>
+
+<button
+  class="btn orange"
+  onclick="
+  openDebitWalletModal(
+    '${id}'
+  )
+  "
+>
+  Debit Wallet
+</button>
+
+
+
+
+
+  <button
+    class="btn dark"
+    onclick="toggleBlock(
+      '${id}',
+      ${u.blocked || false}
+    )"
+  >
+    ${u.blocked ? "Unblock" : "Block"}
+  </button>
+
+</div>
+
+</div>
+
+<br>
+
+<div class="profile-grid">
+
+  <div class="profile-item">
+
+    <span>
+      Total Transactions
+    </span>
+
+    <strong>
+      ${txSnap.size}
+    </strong>
+
+  </div>
+
+  <div class="profile-item">
+
+    <span>
+      Total Funding
+    </span>
+
+    <strong>
+      ₦${totalFunding.toLocaleString('en-NG')}
+    </strong>
+
+  </div>
+
+  <div class="profile-item">
+
+    <span>
+      Total Purchases
+    </span>
+
+    <strong>
+      ₦${totalPurchases.toLocaleString('en-NG')}
+    </strong>
+
+  </div>
+
+</div>
+
+<br>
 
 <div class="section full-transaction-section">
 
@@ -2454,6 +3080,7 @@ transactionsHTML += `
     </div>
     </div>
 
+    
   `;
 
   openModal("userModal");
@@ -2474,32 +3101,331 @@ async function toggleBlock(id,current){
 
 }
 
+
+
+function openCreditWalletModal(userId){
+
+  selectedUserId = userId;
+
+  openModal(
+    "creditWalletModal"
+  );
+
+}
+
+function openDebitWalletModal(userId){
+
+  selectedUserId = userId;
+
+  openModal(
+    "debitWalletModal"
+  );
+
+}
+
+
+
+async function submitWalletCredit(){
+
+  try{
+
+    const amount =
+    Number(
+      document.getElementById(
+        "creditWalletAmount"
+      ).value
+    );
+
+    const type =
+    document.getElementById(
+      "creditWalletType"
+    ).value;
+
+    const description =
+    document.getElementById(
+      "creditWalletDescription"
+    ).value.trim();
+
+    if(
+      !selectedUserId ||
+      amount <= 0
+    ){
+
+      alert(
+        "Enter valid amount"
+      );
+
+      return;
+
+    }
+
+    await db.runTransaction(
+      async(transaction)=>{
+
+        const userRef =
+        db.collection("users")
+        .doc(selectedUserId);
+
+        const userSnap =
+        await transaction.get(
+          userRef
+        );
+
+        const user =
+        userSnap.data();
+
+        const before =
+        Number(
+          user.wallet || 0
+        );
+
+        const after =
+        before + amount;
+
+        transaction.update(
+          userRef,
+          {
+            wallet: after
+          }
+        );
+
+        transaction.set(
+
+          db.collection(
+            "transactions"
+          ).doc(),
+
+          {
+
+            userId:
+            selectedUserId,
+
+            email:
+            user.email,
+
+            amount,
+
+            type,
+
+            description,
+
+            balanceBefore:
+            before,
+
+            balanceAfter:
+            after,
+
+            status:
+            "successful",
+
+            createdAt:
+            firebase.firestore
+            .FieldValue
+            .serverTimestamp()
+
+          }
+
+        );
+
+      }
+    );
+
+    alert(
+      "Wallet credited"
+    );
+
+    closeModal(
+      "creditWalletModal"
+    );
+
+    loadDashboard();
+
+    viewUser(
+      selectedUserId
+    );
+
+  }catch(error){
+
+    console.error(
+      error
+    );
+
+    alert(
+      error.message
+    );
+
+  }
+
+}
+
+
+
+
+async function submitWalletDebit(){
+
+  try{
+
+    const amount =
+    Number(
+      document.getElementById(
+        "debitWalletAmount"
+      ).value
+    );
+
+    const reason =
+    document.getElementById(
+      "debitWalletReason"
+    ).value.trim();
+
+    if(
+      !selectedUserId ||
+      amount <= 0
+    ){
+
+      alert(
+        "Enter valid amount"
+      );
+
+      return;
+
+    }
+
+    await db.runTransaction(
+      async(transaction)=>{
+
+        const userRef =
+        db.collection("users")
+        .doc(selectedUserId);
+
+        const userSnap =
+        await transaction.get(
+          userRef
+        );
+
+        const user =
+        userSnap.data();
+
+        const before =
+        Number(
+          user.wallet || 0
+        );
+
+        if(
+          before < amount
+        ){
+
+          throw new Error(
+            "Insufficient balance"
+          );
+
+        }
+
+        const after =
+        before - amount;
+
+        transaction.update(
+          userRef,
+          {
+            wallet: after
+          }
+        );
+
+        transaction.set(
+
+          db.collection(
+            "transactions"
+          ).doc(),
+
+          {
+
+            userId:
+            selectedUserId,
+
+            email:
+            user.email,
+
+            amount,
+
+            type:
+            "admin-debit",
+
+            description:
+            reason,
+
+            balanceBefore:
+            before,
+
+            balanceAfter:
+            after,
+
+            status:
+            "successful",
+
+            createdAt:
+            firebase.firestore
+            .FieldValue
+            .serverTimestamp()
+
+          }
+
+        );
+
+      }
+    );
+
+    alert(
+      "Wallet debited"
+    );
+
+    closeModal(
+      "debitWalletModal"
+    );
+
+    loadDashboard();
+
+    viewUser(
+      selectedUserId
+    );
+
+  }catch(error){
+
+    console.error(
+      error
+    );
+
+    alert(
+      error.message
+    );
+
+  }
+
+}
+
+
 /* ===========================
 TRANSACTIONS
 =========================== */
 
-function loadTransactions(){
+async function loadTransactions(){
 
-  db.collection("transactions")
+  const snapshot =
+  await db.collection("transactions")
   .orderBy("createdAt","desc")
-  .limit(500)
-  .onSnapshot(snapshot=>{
+  .limit(100)
+  .get();
 
-    transactionsData = [];
+  transactionsData = [];
 
-    snapshot.forEach(doc=>{
+  snapshot.forEach(doc=>{
 
-      transactionsData.push({
-        id:doc.id,
-        ...doc.data()
-      });
-
+    transactionsData.push({
+      id:doc.id,
+      ...doc.data()
     });
 
-    // APPLY FILTER AFTER SNAPSHOT
-    filterTransactions();
-
   });
+
+  filterTransactions();
 
 }
 
@@ -3846,7 +4772,10 @@ else if(filter !== 'custom'){
   }
 
   const txSnap =
-  await db.collection("transactions").get();
+  await db.collection("transactions")
+.orderBy("createdAt","desc")
+.limit(200)
+.get();;
 
   let daily = {};
 
@@ -4383,6 +5312,53 @@ function viewTransactionReceipt(t){
       </div>
     </div>
 
+    <br>
+
+<div
+  style="
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  "
+>
+
+  ${
+    t.status === "pending"
+    ?
+
+    `
+
+<button
+  class="btn green"
+  onclick="
+  markTransactionSuccessful(
+    '${t.id}'
+  )
+  "
+>
+  Mark Successful
+</button>
+
+<button
+  class="btn orange"
+  onclick="
+  refundTransaction(
+    '${t.id}'
+  )
+  "
+>
+  Refund User
+</button>
+
+    `
+
+    :
+
+    ""
+  }
+
+</div>
+
   `;
 
 }
@@ -4395,6 +5371,577 @@ function closeReceiptModal(){
 
 }
 
+
+
+
+async function markTransactionSuccessful(txId){
+
+  try{
+
+    await db.collection(
+      "transactions"
+    )
+    .doc(txId)
+    .update({
+
+      status:"success",
+
+      completedAt:
+      firebase.firestore
+      .FieldValue
+      .serverTimestamp()
+
+    });
+
+    alert(
+      "Transaction marked successful"
+    );
+
+    closeReceiptModal();
+
+    loadTransactions();
+
+    loadFailedTransactions();
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
+
+}
+
+
+
+async function refundTransaction(txId){
+
+  try{
+
+    await db.runTransaction(
+      async(transaction)=>{
+
+        const txRef =
+        db.collection(
+          "transactions"
+        )
+        .doc(txId);
+
+        const txSnap =
+        await transaction.get(
+          txRef
+        );
+
+        if(!txSnap.exists){
+
+          throw new Error(
+            "Transaction not found"
+          );
+
+        }
+
+        const tx =
+        txSnap.data();
+
+console.log("=== REFUND DEBUG ===");
+console.log("TX ID:", txId);
+console.log("STATUS:", tx.status);
+console.log("REFUNDED:", tx.refunded);
+console.log("TX DATA:", tx);
+
+
+if(
+  tx.refunded === true
+){
+  console.log("FAILED CHECK: refunded");
+  throw new Error(
+    "Transaction already refunded"
+  );
+}
+
+if(
+  tx.status === "refunded"
+){
+  console.log("FAILED CHECK: status refunded");
+  throw new Error(
+    "Transaction status is refunded"
+  );
+}
+
+if(
+  tx.status === "success"
+){
+  console.log("FAILED CHECK: success");
+  throw new Error(
+    "Successful transactions cannot be refunded"
+  );
+}
+
+        const amount =
+        Number(
+          tx.amount ||
+          tx.price ||
+          0
+        );
+
+        const userRef =
+        db.collection("users")
+        .doc(tx.userId);
+
+        const userSnap =
+        await transaction.get(
+          userRef
+        );
+
+        const user =
+        userSnap.data();
+
+        const before =
+        Number(
+          user.wallet || 0
+        );
+
+        const after =
+        before + amount;
+
+        transaction.update(
+          userRef,
+          {
+            wallet: after
+          }
+        );
+
+        transaction.update(
+          txRef,
+          {
+            status:"refunded",
+
+            refunded:true,
+
+            refundedAt:
+            firebase.firestore
+            .FieldValue
+            .serverTimestamp()
+          }
+        );
+
+        transaction.set(
+
+          db.collection(
+            "transactions"
+          ).doc(),
+
+          {
+
+            userId:
+            tx.userId,
+
+            email:
+            tx.email,
+
+            amount,
+
+            type:
+            "refund",
+
+            sourceTransactionId:
+            txId,
+
+            balanceBefore:
+            before,
+
+            balanceAfter:
+            after,
+
+            description:
+            `Refund for failed ${tx.type}`,
+
+            status:
+            "success",
+
+            createdAt:
+            firebase.firestore
+            .FieldValue
+            .serverTimestamp()
+
+          }
+
+        );
+
+      }
+    );
+
+    alert(
+      "User refunded successfully"
+    );
+
+    closeReceiptModal();
+
+    loadTransactions();
+
+    loadFailedTransactions();
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
+
+}
+
+
+
+async function loadFailedTransactions(){
+
+  const table =
+  document.getElementById(
+    "failedTransactionsTable"
+  );
+
+  table.innerHTML = "";
+
+  const snapshot =
+  await db.collection("transactions")
+  .where(
+    "status",
+    "in",
+    ["pending","failed"]
+  )
+  .orderBy(
+    "createdAt",
+    "desc"
+  )
+  .limit(100)
+  .get();
+
+  snapshot.forEach(doc=>{
+
+const t = {
+  id: doc.id,
+  ...doc.data()
+};
+
+    table.innerHTML += `
+
+    <tr>
+
+      <td>
+        ${t.email || "-"}
+      </td>
+
+      <td>
+        ${t.type || "-"}
+      </td>
+
+      <td>
+        ₦${Number(
+          t.amount || t.price || 0
+        ).toLocaleString("en-NG")}
+      </td>
+
+      <td>
+
+        ${
+          t.status === "failed"
+          ? "❌ Failed"
+          : "⏳ Pending"
+        }
+
+      </td>
+
+      <td>
+
+        ${
+          t.createdAt?.toDate
+          ?
+          t.createdAt.toDate()
+          .toLocaleString()
+          :
+          "-"
+        }
+
+      </td>
+
+      <td>
+
+        <button
+          class="btn green"
+          onclick='viewTransactionReceipt(${JSON.stringify(t)})'
+        >
+
+          View
+
+        </button>
+
+      </td>
+
+    </tr>
+
+    `;
+
+  });
+
+}
+
+
+
+
+
+
+async function loadActivityFeed(){
+
+  const feed =
+  document.getElementById(
+    "activityFeed"
+  );
+
+  feed.innerHTML = "";
+
+  const snapshot =
+  await db.collection(
+    "transactions"
+  )
+  .orderBy(
+    "createdAt",
+    "desc"
+  )
+  .limit(10)
+  .get();
+
+  snapshot.forEach(doc=>{
+
+    const t = doc.data();
+
+    feed.innerHTML += `
+
+      <div class="activity-item">
+
+        ${getActivityText(t)}
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+
+
+
+function getActivityText(t){
+
+  const amount =
+  Number(
+    t.amount ||
+    t.price ||
+    0
+  ).toLocaleString("en-NG");
+
+  switch(t.type){
+
+    case "wallet_funding":
+
+      return `
+      💰 ${t.email}
+      funded ₦${amount}
+      `;
+
+    case "airtime":
+
+      return `
+      📱 ${t.email}
+      purchased airtime
+      worth ₦${amount}
+      `;
+
+    case "data":
+
+      return `
+      🌐 ${t.email}
+      purchased data
+      worth ₦${amount}
+      `;
+
+    case "electricity":
+
+      return `
+      ⚡ ${t.email}
+      paid electricity bill
+      worth ₦${amount}
+      `;
+
+    case "voucher":
+
+      return `
+      🎫 ${t.email}
+      purchased voucher
+      worth ₦${amount}
+      `;
+
+    case "cashback_withdrawal":
+
+      return `
+      🎁 ${t.email}
+      withdrew cashback
+      of ₦${amount}
+      `;
+
+    default:
+
+      return `
+      📄 ${t.email}
+      completed a transaction
+      worth ₦${amount}
+      `;
+
+  }
+
+}
+
+
+
+
+
+
+
+async function sendBroadcast(){
+
+  try{
+
+    const title =
+    document.getElementById(
+      "broadcastTitle"
+    ).value.trim();
+
+    const message =
+    document.getElementById(
+      "broadcastMessage"
+    ).value.trim();
+
+    if(!title || !message){
+
+      alert(
+        "Please fill all fields"
+      );
+
+      return;
+
+    }
+
+    await db.collection(
+      "announcements"
+    ).add({
+
+      title,
+
+      message,
+
+      createdBy:
+      auth.currentUser.email,
+
+      createdAt:
+      firebase.firestore
+      .FieldValue
+      .serverTimestamp()
+
+    });
+
+    await db.collection(
+      "adminLogs"
+    ).add({
+
+      adminEmail:
+      auth.currentUser.email,
+
+      action:
+      "Broadcast Notification",
+
+      details:
+      title,
+
+      createdAt:
+      firebase.firestore
+      .FieldValue
+      .serverTimestamp()
+
+    });
+
+    alert(
+      "Broadcast sent successfully"
+    );
+
+    document.getElementById(
+      "broadcastTitle"
+    ).value = "";
+
+    document.getElementById(
+      "broadcastMessage"
+    ).value = "";
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    alert(
+      error.message
+    );
+
+  }
+
+}
+
+
+
+
+
+
+
+async function exportUserEmails(){
+
+  const snapshot =
+  await db.collection("users").get();
+
+  let csv = "Email\n";
+
+  snapshot.forEach(doc=>{
+
+    const user = doc.data();
+
+    if(user.email){
+
+      csv += `${user.email}\n`;
+
+    }
+
+  });
+
+  const blob = new Blob(
+    [csv],
+    { type:"text/csv" }
+  );
+
+  const url =
+  URL.createObjectURL(blob);
+
+  const a =
+  document.createElement("a");
+
+  a.href = url;
+  a.download = "biva-users-emails.csv";
+
+  a.click();
+
+}
 </script>
 
 
@@ -4510,6 +6057,52 @@ function closeReceiptModal(){
       </button>
 
     </div>
+
+  </div>
+
+</div>
+
+
+
+
+
+<!-- 📢 Broadcast Notifications -->
+<div
+  id="broadcastPage"
+  class="page"
+>
+
+  <div class="section">
+
+    <h2>
+      Broadcast Message
+    </h2>
+
+
+    <input
+      type="text"
+      id="broadcastTitle"
+      placeholder="Title"
+    >
+
+    <textarea
+      id="broadcastMessage"
+      placeholder="Write your message..."
+      rows="6"
+    ></textarea>
+
+    <button
+      class="btn green"
+      onclick="sendBroadcast()"
+    >
+      Send Broadcast
+    </button>
+    
+
+<button class="btn dark" onclick="exportUserEmails()">
+  📧 Export Emails
+</button>
+    
 
   </div>
 
