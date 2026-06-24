@@ -15,15 +15,17 @@
 
 <!-- FONT -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <style>
 
 :root{
-  --green:#00a86b;
-  --green2:#008753;
+  --green:#071f16;
+  --green2:#ffffff;
   --green3:#e9fff5;
   --dark:#101828;
-  --white:#fff;
+  --white:#0c0505;
   --border:#e7e7e7;
   --danger:#ff4d4f;
   --warning:#ff9800;
@@ -39,9 +41,25 @@
 }
 
 body{
-  background:#CCCCCC;
-  color:#111827;
-  overflow-x:hidden;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(0,168,107,.18),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at bottom left,
+      rgba(0,255,170,.08),
+      transparent 40%
+    ),
+    linear-gradient(
+      135deg,
+      #050816,
+      #0b1220,
+      #071f16
+    );
+
+  min-height:100vh;
 }
 
 html{
@@ -54,22 +72,28 @@ html{
 .app{
   display:flex;
   min-height:100vh;
+  gap:0;
 }
+
 
 /* SIDEBAR */
-
 .sidebar{
-  width:280px;
-  background:linear-gradient(180deg,var(--green),#006d44);
-  color:white;
-  padding:25px;
-  position:fixed;
-  top:0;
-  left:0;
-  bottom:0;
-  overflow-y:auto;
-  z-index:999;
+  width:90px;
+
+  background:linear-gradient(
+    180deg,
+    #081423,
+    #0b1728
+  );
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+
+  padding:20px 10px;
 }
+
+
 
 
 .sidebar::-webkit-scrollbar{
@@ -85,43 +109,79 @@ html{
 
 
 .logo{
-  font-size:28px;
+
+  width:52px;
+  height:52px;
+
+  margin:0 auto 25px;
+  border-radius:16px;
+
+  background:
+  linear-gradient(
+    135deg,
+    #00c853,
+    #00a86b
+  );
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:24px;
   font-weight:900;
-  margin-bottom:35px;
+
+  color:white;
 }
+
 
 .logo span{
   opacity:.7;
 }
 
-.menu button{
+.menu{
   width:100%;
+}
+
+.menu button{
+
+  width:70px;
+  height:70px;
+
+  margin:0 auto 12px;
+
   border:none;
-  padding:16px;
+
   border-radius:18px;
-  background:rgba(255,255,255,0.08);
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:22px;
+
+  background:rgba(255,255,255,.05);
+
   color:white;
-  margin-bottom:12px;
-  cursor:pointer;
-  font-size:15px;
-  text-align:left;
+
   transition:.3s;
-  font-weight:600;
 }
 
 .menu button:hover,
 .menu button.active{
-  background:white;
-  color:var(--green2);
-  transform:translateX(5px);
+
+  background:#00a86b;
+
+  transform:translateY(-2px);
+
 }
 
 /* MAIN */
 
 .main{
-  margin-left:280px;
-  width:calc(100% - 280px);
+  flex:1;
   padding:25px;
+  padding-bottom:80px;
+  min-width:0;
 }
 
 .topbar{
@@ -391,62 +451,162 @@ html{
 /* CARDS */
 
 .card-grid{
+
   display:grid;
 
-  /* 3 cards per row on desktop */
-  grid-template-columns:repeat(3, 1fr);
+  grid-template-columns:
+  repeat(4,1fr);
 
-  gap:16px;
-  margin-bottom:25px;
+  gap:20px;
+
 }
 
+
+@media(max-width:1400px){
+
+  .card-grid{
+    grid-template-columns:
+    repeat(3,1fr);
+  }
+
+}
+
+@media(max-width:1000px){
+
+  .card-grid{
+    grid-template-columns:
+    repeat(2,1fr);
+  }
+
+}
+
+@media(max-width:650px){
+
+  .card-grid{
+    grid-template-columns:
+    1fr;
+  }
+
+}
+
+
+
 .card{
-  background:white;
-  border-radius:22px;
-.card{
-  transition:.3s ease;
+  background:
+  rgba(8,20,35,.85);
+
+  border:1px solid
+  rgba(255,255,255,.08);
+
+  border-radius:20px;
+
+  padding:18px;
+
+  min-height:130px;
+
+  backdrop-filter:blur(20px);
+
+  transition:.3s;
+
+  box-shadow:
+0 20px 40px rgba(0,0,0,.30);
+
+background:
+linear-gradient(
+145deg,
+rgba(18,28,45,.95),
+rgba(8,20,35,.85)
+);
+
+border:
+1px solid rgba(255,255,255,.08);
 }
 
 .card:hover{
-  transform:translateY(-4px);
-  box-shadow:0 15px 35px rgba(0,0,0,.08);
+
+  transform:
+  translateY(-3px);
+
+  border-color:
+  rgba(0,168,107,.4);
+
 }
 
 
 
+.kpi-header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:15px;
+}
 
+.kpi-icon{
+  width:42px;
+  height:42px;
 
-  /* REDUCED HEIGHT */
-  padding:18px 20px;
-
-  box-shadow:var(--shadow);
-  border:1px solid #eff7f2;
-
-  /* WIDER + CLEAN */
-  min-height:110px;
+  border-radius:12px;
 
   display:flex;
-  flex-direction:column;
+  align-items:center;
   justify-content:center;
 
-  overflow:hidden;
+  font-size:18px;
+
+  color:white;
 }
 
+.wallet-icon{
+  background:linear-gradient(135deg,#00c853,#00a86b);
+}
+
+.cashback-icon{
+  background:linear-gradient(135deg,#2196f3,#1565c0);
+}
+
+.internet-icon{
+  background:linear-gradient(135deg,#7c4dff,#512da8);
+}
+
+.voucher-icon{
+  background:linear-gradient(135deg,#ff9800,#ef6c00);
+}
+
+.manual-icon{
+  background:linear-gradient(135deg,#00bcd4,#0097a7);
+}
+
+.revenue-icon{
+  background:linear-gradient(135deg,#4caf50,#2e7d32);
+}
+
+.expense-icon{
+  background:linear-gradient(135deg,#f44336,#b71c1c);
+}
+
+.profit-icon{
+  background:linear-gradient(135deg,#9c27b0,#6a1b9a);
+}
+
+
 .stat-title{
-  font-size:14px;
-  color:#777;
+
+  font-size:13px;
+
+  color:#94a3b8;
+
   margin-bottom:10px;
-  font-weight:600;
+
 }
 
 .stat-value{
-  font-size:28px;
-  font-weight:900;
-  color:var(--green2);
 
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+  font-size:38px;
+
+  font-weight:800;
+
+  color:white;
+
 }
 
 /* TABLET */
@@ -672,23 +832,24 @@ RESPONSIVE LAYOUT FIX
     flex-direction:column;
   }
 
-  .sidebar{
-    width:100%;
-    position:sticky;
-    top:0;
-    left:0;
-    bottom:auto;
-    z-index:9999;
 
-    padding:16px;
-    overflow-x:auto;
-    overflow-y:hidden;
+  
+.sidebar{
+  width:70px;
 
-    display:flex;
-    flex-direction:column;
+  background:linear-gradient(
+    180deg,
+    #081423,
+    #0b1728
+  );
 
-    background:linear-gradient(90deg,var(--green),#006d44);
-  }
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+
+  padding:20px 5px;
+}
+
 
   .logo{
     margin-bottom:15px;
@@ -709,20 +870,41 @@ RESPONSIVE LAYOUT FIX
     display:none;
   }
 
-  .menu button{
-    min-width:max-content;
-    margin-bottom:0;
-    border-radius:14px;
-    padding:12px 16px;
-    white-space:nowrap;
-    font-size:14px;
-  }
 
-  .main{
-    width:100%;
-    margin-left:0;
-    padding:16px;
-  }
+  
+.menu button{
+  width:50px;
+  height:50px;
+
+  margin:0 auto 12px;
+
+  border:none;
+  border-radius:14px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:18px;
+
+  background:rgba(255,255,255,.05);
+  color:white;
+
+  transition:.3s;
+}
+
+
+  
+.main{
+  flex:1;
+  padding:25px;
+  padding-bottom:80px;
+  margin-left:90px;
+
+  width:auto;
+  min-width:0;
+}
+
 
   .topbar{
     flex-direction:column;
@@ -1021,6 +1203,24 @@ REALTIME POPUP NOTIFICATION
   color:#999;
 }
 
+
+
+
+.card-trend{
+
+  margin-top:12px;
+
+  color:#22c55e;
+
+  font-size:13px;
+
+  font-weight:600;
+
+}
+
+
+
+
 @keyframes popupSlide{
 
   from{
@@ -1063,7 +1263,7 @@ REALTIME POPUP NOTIFICATION
 }
 
 .receipt-box{
-  background:#fff;
+  background:#1d0f0f;
   width:100%;
   max-width:500px;
   border-radius:20px;
@@ -1346,6 +1546,369 @@ USER PROFILE
   font-size:14px;
 
 }
+
+
+
+
+.chart-grid{
+
+  display:grid;
+
+  grid-template-columns:
+  1fr 1fr;
+
+  gap:18px;
+
+  margin-top:18px;
+
+}
+
+.activity-card{
+    height:320px;
+}
+
+
+
+
+.chart-card{
+
+  height:320px;
+  min-height: 360px;
+
+  background:
+  rgba(8,20,35,.85);
+
+  border:1px solid
+  rgba(255,255,255,.08);
+
+  border-radius:24px;
+
+  padding:20px;
+
+  backdrop-filter:blur(20px);
+
+}
+
+#financeChart{
+  max-height: 250px !important;
+}
+
+.chart-header{
+
+  margin-bottom:20px;
+
+}
+
+.chart-header h2{
+
+  color:white;
+
+  font-size:22px;
+
+}
+
+
+
+
+
+
+.activity-card{
+
+  margin-top:20px;
+
+  background:linear-gradient(
+    145deg,
+    rgba(18,28,45,.95),
+    rgba(8,20,35,.85)
+  );
+
+  border:1px solid rgba(255,255,255,.08);
+
+  border-radius:24px;
+
+  padding:20px;
+
+  backdrop-filter:blur(20px);
+
+  box-shadow:
+  0 20px 40px rgba(0,0,0,.30);
+
+}
+
+
+.activity-header{
+
+  margin-bottom:20px;
+
+}
+
+.activity-header h2{
+
+  color:white;
+
+}
+
+.activity-item{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  gap:15px;
+
+  padding:16px;
+
+  margin-bottom:12px;
+
+  border-radius:16px;
+
+  background:
+  rgba(255,255,255,.04);
+
+  border:
+  1px solid rgba(255,255,255,.05);
+
+  transition:.3s;
+
+}
+
+
+.activity-details{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.activity-user{
+
+  color:white;
+
+  font-weight:700;
+
+  font-size:14px;
+
+}
+
+.activity-service{
+
+  color:#94a3b8;
+
+  font-size:12px;
+
+}
+
+.activity-amount{
+
+  color:#22c55e;
+
+  font-weight:700;
+
+}
+
+.activity-time{
+
+  color:#64748b;
+
+  font-size:12px;
+
+}
+
+
+
+.activity-item:hover{
+
+  transform:translateX(4px);
+
+  border-color:
+  rgba(0,168,107,.4);
+
+}
+
+.activity-left{
+
+  color:white;
+
+}
+
+.activity-time{
+
+  color:#94a3b8;
+
+  font-size:13px;
+
+}
+
+
+
+#recentActivity{
+
+  max-height:450px;
+
+  height:240px;
+
+  overflow-y:auto;
+
+  padding-right:5px;
+
+}
+
+#recentActivity::-webkit-scrollbar{
+  width:6px;
+}
+
+#recentActivity::-webkit-scrollbar-thumb{
+  background:#334155;
+  border-radius:20px;
+}
+
+
+
+
+.profit-highlight{
+
+  position:absolute;
+
+  top:60px;
+
+  right:20px;
+
+  background:
+  linear-gradient(
+    135deg,
+    #22c55e,
+    #16a34a
+  );
+
+  padding:18px 25px;
+
+  border-radius:20px;
+
+  box-shadow:
+  0 20px 40px rgba(
+    34,197,94,.35
+  );
+
+}
+
+.profit-label{
+
+  color:white;
+
+  font-size:12px;
+
+  font-weight:700;
+
+  opacity:.8;
+
+}
+
+.profit-value{
+
+  color:white;
+
+  font-size:30px;
+
+  font-weight:900;
+
+}
+
+
+
+
+.dashboard-footer{
+   position:fixed;
+   bottom:0;
+   left:70px;
+   right:0;
+
+   height:60px;
+
+   display:flex;
+   justify-content:center;
+   align-items:center;
+
+   background:#101827;
+   border-top:1px solid rgba(255,255,255,.08);
+}
+
+
+.footer-stat{
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    padding:0 24px;
+
+    color:#b8c1d1;
+
+    font-size:14px;
+
+    border-right:1px solid rgba(255,255,255,.12);
+}
+
+.footer-stat:last-child{
+    border-right:none;
+}
+
+.footer-stat strong{
+    color:#fff;
+    font-size:18px;
+    font-weight:700;
+}
+
+
+
+.dashboard-footer span{
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    color:#a8b3cf;
+
+    font-size:15px;
+    font-weight:500;
+}
+
+.dashboard-footer strong{
+    color:#ffffff;
+
+    font-size:18px;
+    font-weight:700;
+}
+
+
+.dashboard-footer span:hover{
+    color:#fff;
+    transition:.3s;
+}
+
+
+
+.finance-legend{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:12px;
+  margin-top:20px;
+}
+
+.finance-item{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#fff;
+  font-size:14px;
+  font-weight:600;
+}
+
+.finance-dot{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+}
+
 </style>
 
 
@@ -1370,24 +1933,58 @@ USER PROFILE
 
 </nav>
 
-  <div class="logo">
-    BIVA <span>ADMIN</span>
-  </div>
+<div class="logo">
+  B
+</div>
 
 
 
+<div class="menu">
+<button class="active" onclick="showPage('finance',this)" title="Dashboard">
+<i class="fas fa-chart-pie"></i>
+</button>
+    
+    
+<button onclick="showPage('users',this)" title="Users">
+<i class="fas fa-users"></i>
+</button>
 
-  <div class="menu">
-    <button class="active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
-    <button onclick="showPage('users',this)">👥 Users</button>
-    <button onclick="showPage('transactions',this)">💳 Transactions</button>
-    <button onclick="showPage('failed',this)"> 🚨 Transaction Issues </button>
-    <button onclick="showPage('manual',this)">🧾 Manual Sales</button>
-    <button onclick="showPage('support',this)">💬 Support</button>
-    <button onclick="showPage('expenses',this)">💸 Expenses</button>
-    <button onclick="showPage('logs',this)">📜 Admin Logs</button>
-    <button onclick="showPage('broadcast',this)" > 📢 Broadcast </button>
-    <button onclick="logout()">🚪 Logout</button>
+
+<button onclick="showPage('transactions',this)" title="Transactions">
+<i class="fas fa-credit-card"></i>
+</button>
+
+
+
+<button onclick="showPage('failed',this)" title="Transaction Issues">
+<i class="fas fa-triangle-exclamation"></i>
+</button>
+
+<button onclick="showPage('manual',this)" title="Manual Sales">
+<i class="fas fa-file-invoice"></i>
+</button>
+
+<button onclick="showPage('support',this)" title="Support">
+  <i class="fas fa-comments"></i>
+</button>
+
+<button onclick="showPage('expenses',this)" title="Expenses">
+  <i class="fas fa-money-bill-wave"></i>
+</button>
+
+<button onclick="showPage('logs',this)" title="Admin Logs">
+  <i class="fas fa-clipboard-list"></i>
+</button>
+
+<button onclick="showPage('broadcast',this)" title="Broadcast">
+  <i class="fas fa-bullhorn"></i>
+</button>
+
+<button onclick="logout()" title="Logout">
+  <i class="fas fa-right-from-bracket"></i>
+</button>
+
+
   </div>
 
 </div>
@@ -1402,11 +1999,27 @@ USER PROFILE
 <!-- TOP -->
 <div class="topbar">
 
+    <div class="profit-highlight">
+
+  <div class="profit-label">
+    NET PROFIT
+  </div>
+
+  <div
+    class="profit-value"
+    id="netProfit">
+    ₦0
+  </div>
+
+</div>
+
 
 
   <div class="topbar-left">
 <h1>Dashboard</h1>
 </div>
+
+
 
 
 
@@ -1503,132 +2116,239 @@ USER PROFILE
 
 
 
-<!-- DASHBOARD -->
-<div id="dashboardPage" class="page active">
+<!-- FINANCE -->
+<div id="financePage" class="page">
 
-<div class="card-grid">
-
-<div class="card">
-  <div class="stat-title">Total Income</div>
-  <div class="stat-value" id="totalIncome">₦0</div>
-</div>
-
-
-<div class="card">
-  <div class="stat-title">Total Expenditure</div>
-  <div class="stat-value" id="totalExpenditure">₦0</div>
-</div>
-
-
-  <div class="card">
-    <div class="stat-title">Total Profit</div>
-    <div class="stat-value" id="totalProfit">₦0</div>
-  </div>
-
-
-  <div class="card">
-    <div class="stat-title">Total Funding</div>
-    <div class="stat-value" id="totalFunding">₦0</div>
-  </div>
-
-
-  <div class="card">
-    <div class="stat-title">Pending Manual</div>
-    <div class="stat-value" id="pendingManual">₦0</div>
-  </div>
-
-
-
-
-
-  <div class="card">
-  <div class="stat-title">
-    Pending Transactions
-  </div>
-
-  <div
-    class="stat-value"
-    id="pendingTransactions"
-  >
-    0
-  </div>
-</div>
-
-<div class="card">
-  <div class="stat-title">
-    Failed Transactions
-  </div>
-
-  <div
-    class="stat-value"
-    id="failedTransactions"
-  >
-    0
-  </div>
-</div>
-
+  <div class="card-grid">
 
 
 
 
 <div class="card">
+
+  <div class="kpi-header">
+
+    <div class="kpi-icon wallet-icon">
+      <i class="fas fa-wallet"></i>
+    </div>
+
+    <div class="stat-title">
+      Wallet Liability
+    </div>
+
+  </div>
+
+  <div class="stat-value"
+       id="walletLiability">
+  </div>
+
+  <div class="card-trend">
+    ↑ Total user wallet balance
+  </div>
+
+</div>
+
+
+
+
+    <div class="card">
+      <div class="kpi-header">
+
+  <div class="kpi-icon cashback-icon">
+    <i class="fas fa-gift"></i>
+  </div>
 
   <div class="stat-title">
-    Today's Transactions
-  </div>
-
-  <div
-    class="stat-value"
-    id="todayTransactions"
-  >
-    0
+    Cashback Liability
   </div>
 
 </div>
+      <div class="stat-value" id="cashbackLiability">₦0</div>
+    </div>
+
+
+
+
+
+    <div class="card">
+      <div class="kpi-header">
+
+  <div class="kpi-icon internet-icon">
+    <i class="fas fa-wifi"></i>
+  </div>
+
+  <div class="stat-title">
+    Internet Revenue
+  </div>
+
+</div>
+      <div class="stat-value" id="internetRevenue">₦0</div>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="card">
+      <div class="kpi-header">
+
+  <div class="kpi-icon voucher-icon">
+    <i class="fas fa-ticket"></i>
+  </div>
+
+  <div class="stat-title">
+    Voucher Revenue
+  </div>
+
+</div>
+      <div class="stat-value" id="voucherRevenue">₦0</div>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="card">
+      <div class="kpi-header">
+
+  <div class="kpi-icon manual-icon">
+    <i class="fas fa-file-invoice"></i>
+  </div>
+
+  <div class="stat-title">
+    Manual Revenue
+  </div>
+
+</div>
+      <div class="stat-value" id="manualRevenue">₦0</div>
+    </div>
+
+
+
+    <div class="card">
+
+  <div class="kpi-header">
+
+    <div class="kpi-icon revenue-icon">
+      <i class="fas fa-building"></i>
+    </div>
+
+    <div class="stat-title">
+      Company Income
+    </div>
+
+  </div>
+
+  <div class="stat-value"
+       id="companyIncome">
+    ₦0
+  </div>
+
+</div>
+
+
+
+
+
+
+    <div class="card">
+      <div class="kpi-header">
+
+  <div class="kpi-icon revenue-icon">
+    <i class="fas fa-coins"></i>
+  </div>
+
+  <div class="stat-title">
+    Total Income
+  </div>
+
+</div>
+      <div class="stat-value" id="actualProfit">₦0</div>
+    </div>
+
+
+
+
+
+
+
+
 
 
 
 
 <div class="card">
+   <div class="kpi-header">
+
+  <div class="kpi-icon expense-icon">
+    <i class="fas fa-money-bill-wave"></i>
+  </div>
 
   <div class="stat-title">
-    Today's Signups
-  </div>
-
-  <div
-    class="stat-value"
-    id="todaySignups"
-  >
-    0
+    Expenses
   </div>
 
 </div>
+   <div class="stat-value" id="totalExpenses">₦0</div>
+</div>
 
-
-
-
-
-  <div class="card">
-    <div class="stat-title">Total Users</div>
-    <div class="stat-value" id="totalUsers">0</div>
   </div>
 
 
+
+      <div class="chart-grid">
+
+  <div class="chart-card">
+
+    <div class="chart-header">
+      <h2>Revenue Breakdown</h2>
+    </div>
+
+    <canvas id="financeChart"></canvas>
+
+    <div id="financeLegend" class="finance-legend"></div>
+
+  </div>
+
+  <div class="chart-card">
+
+    <div class="chart-header">
+      <h2>Revenue Trend</h2>
+    </div>
+
+    <canvas id="revenueTrendChart"></canvas>
+
+  </div>
+
 </div>
 
-<div class="section">
 
-<div class="flex">
+
+
+
+<div class="activity-card">
+
+  <div class="activity-header">
+    <h2>Recent Activity</h2>
+  </div>
+
+  <div id="recentActivity">
+    Loading...
+  </div>
+
+</div>
 </div>
 
-<div class="chart-container">
-  <canvas id="profitChart"></canvas>
-</div>
 
 
-</div>
-
-</div>
 
 
 
@@ -1901,6 +2621,8 @@ USER PROFILE
   </div>
 
 </div>
+
+
 
 
 
@@ -2184,12 +2906,17 @@ auth.onAuthStateChanged(async(user)=>{
 
   }
 
-  /* LOAD ADMIN DATA */
+/* LOAD ADMIN DATA */
 
+showPage(
+  "finance",
+  document.querySelector(".menu button")
+);
+
+loadFinance();
 loadDashboard();
-loadChart();
 loadNotifications();
-loadActivityFeed();
+loadRecentActivity();
 
 });
 
@@ -2210,29 +2937,33 @@ function showPage(page,btn){
 
   btn.classList.add('active');
 
-  if(page === "users"){
-    loadUsers();
-  }
+if(page === "users" && usersData.length === 0){
+  loadUsers();
+}
 
-  if(page === "transactions"){
-    loadTransactions();
-  }
+if(page === "transactions" && transactionsData.length === 0){
+  loadTransactions();
+}
 
-  if(page === "failed"){
-    loadFailedTransactions();
-  }
+if(page === "failed"){
+  loadFailedTransactions();
+}
 
-  if(page === "manual"){
-    loadManualSales();
-  }
+if(page === "finance"){
+  loadFinance();
+}
 
-  if(page === "support"){
-    loadSupportChats();
-  }
+if(page === "manual"){
+  loadManualSales();
+}
 
-  if(page === "logs"){
-    loadLogs();
-  }
+if(page === "support"){
+  loadSupportChats();
+}
+
+if(page === "logs"){
+  loadLogs();
+}
 
 }
 
@@ -2559,6 +3290,534 @@ todaySignups;
 }
 
 
+
+
+
+
+
+async function loadFinance(){
+  
+  if(window.financeLoaded){
+  return;
+}
+
+  let walletLiability = 0;
+  let cashbackLiability = 0;
+
+  let internetRevenue = 0;
+  let voucherRevenue = 0;
+  let manualRevenue = 0;
+
+  // USERS
+
+  const usersSnap =
+  await db.collection("users").get();
+
+  usersSnap.forEach(doc=>{
+
+    const user = doc.data();
+
+    walletLiability +=
+    Number(user.wallet || 0);
+
+    cashbackLiability +=
+    Number(user.cashbackBalance || 0);
+
+  });
+
+  // TRANSACTIONS
+
+  const txSnap =
+  await db.collection("transactions").get();
+
+  txSnap.forEach(doc=>{
+
+    const tx = doc.data();
+
+    const amount =
+    Number(tx.amount || 0);
+
+    if(tx.type === "voucher"){
+
+      voucherRevenue += amount;
+
+    }
+
+  });
+
+  // INTERNET ACCOUNTS
+
+  const internetSnap =
+  await db.collection("internetAccounts").get();
+
+  internetSnap.forEach(doc=>{
+
+    const acc = doc.data();
+
+    internetRevenue +=
+    Number(acc.amount || 0);
+
+  });
+
+  // MANUAL SALES
+
+  const manualSnap =
+  await db.collection("manualSales")
+  .where("status","==","approved")
+  .get();
+
+  manualSnap.forEach(doc=>{
+
+    manualRevenue +=
+    Number(doc.data().amount || 0);
+
+  });
+
+
+let totalExpenses = 0;
+let companyIncome = 0;
+
+const expenseSnap =
+await db.collection("companyTransactions").get();
+
+expenseSnap.forEach(doc => {
+
+  const item = doc.data();
+
+  const amount =
+  Number(item.amount || 0);
+
+  if(item.type === "expense") {
+
+    totalExpenses += amount;
+
+  }
+
+  if(
+    item.type === "income" ||
+    item.type === "profit" ||
+    item.type === "sale"
+  ) {
+
+    companyIncome += amount;
+
+  }
+
+});
+
+const totalIncome =
+  internetRevenue +
+  voucherRevenue +
+  manualRevenue +
+  companyIncome;
+
+const netProfit =
+  totalIncome -
+  totalExpenses;
+
+console.log(
+  "Company Income:",
+  companyIncome
+);
+
+console.log(
+  "Total Income:",
+  totalIncome
+);
+
+console.log(
+  "Total Expenses:",
+  totalExpenses
+);
+
+console.log(
+  "Net Profit:",
+  netProfit
+);
+
+
+  document.getElementById(
+    "walletLiability"
+  ).innerText =
+  "₦" +
+  walletLiability.toLocaleString();
+
+  document.getElementById(
+    "cashbackLiability"
+  ).innerText =
+  "₦" +
+  cashbackLiability.toLocaleString();
+
+  document.getElementById(
+    "internetRevenue"
+  ).innerText =
+  "₦" +
+  internetRevenue.toLocaleString();
+
+  document.getElementById(
+    "voucherRevenue"
+  ).innerText =
+  "₦" +
+  voucherRevenue.toLocaleString();
+
+  document.getElementById(
+    "manualRevenue"
+  ).innerText =
+  "₦" +
+  manualRevenue.toLocaleString();
+
+
+  document.getElementById(
+  "companyIncome"
+).innerText =
+"₦" +
+companyIncome.toLocaleString();
+
+
+window.financeData = {
+  internetRevenue,
+  voucherRevenue,
+  manualRevenue,
+  companyIncome
+};
+
+
+
+document.getElementById(
+  "actualProfit"
+).innerText =
+"₦" +
+totalIncome.toLocaleString();
+
+document.getElementById(
+  "totalExpenses"
+).innerText =
+"₦" +
+totalExpenses.toLocaleString();
+
+document.getElementById(
+  "netProfit"
+).innerText =
+"₦" +
+netProfit.toLocaleString();
+
+  loadFinanceChart();
+  loadRevenueTrendChart();
+  loadRecentActivity();
+
+window.financeLoaded = true;
+}
+
+
+
+
+
+
+
+let financeChart;
+let revenueTrendChart;
+let revenueDistributionChart;
+
+function loadFinanceChart(){
+
+  if(financeChart){
+    financeChart.destroy();
+  }
+
+  const {
+    internetRevenue,
+    voucherRevenue,
+    manualRevenue,
+    companyIncome
+  } = window.financeData;
+
+  financeChart =
+  new Chart(
+
+    document.getElementById(
+      "financeChart"
+    ),
+
+    {
+
+      type:"doughnut",
+
+      data:{
+
+        labels:[
+          "Internet",
+          "Voucher",
+          "Manual",
+          "Company"
+        ],
+
+        datasets:[{
+
+          data:[
+            internetRevenue,
+            voucherRevenue,
+            manualRevenue,
+            companyIncome
+          ],
+
+          backgroundColor:[
+            "#7C3AED",
+            "#F59E0B",
+            "#06B6D4",
+            "#22C55E"
+          ],
+
+          borderWidth:0
+
+        }]
+
+      },
+
+options:{
+
+responsive:true,
+
+maintainAspectRatio:false,
+
+cutout:"70%",
+
+plugins:{
+  legend:{
+    display:false
+  }
+}
+      }
+
+    }
+
+  );
+
+  const total =
+internetRevenue +
+voucherRevenue +
+manualRevenue +
+companyIncome;
+
+document.getElementById("financeLegend").innerHTML = `
+<div class="finance-item">
+ <span class="finance-dot" style="background:#7C3AED"></span>
+ Internet (${((internetRevenue/total)*100 || 0).toFixed(1)}%)
+</div>
+
+<div class="finance-item">
+ <span class="finance-dot" style="background:#F59E0B"></span>
+ Voucher (${((voucherRevenue/total)*100 || 0).toFixed(1)}%)
+</div>
+
+<div class="finance-item">
+ <span class="finance-dot" style="background:#06B6D4"></span>
+ Manual (${((manualRevenue/total)*100 || 0).toFixed(1)}%)
+</div>
+
+<div class="finance-item">
+ <span class="finance-dot" style="background:#22C55E"></span>
+ Company (${((companyIncome/total)*100 || 0).toFixed(1)}%)
+</div>
+`;
+
+}
+
+
+
+
+
+function loadRevenueTrendChart(){
+
+  if(revenueTrendChart){
+
+    revenueTrendChart.destroy();
+
+  }
+
+  revenueTrendChart =
+  new Chart(
+
+    document.getElementById(
+      "revenueTrendChart"
+    ),
+
+    {
+
+      type:"line",
+
+      data:{
+
+        labels:[
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri",
+          "Sat",
+          "Sun"
+        ],
+
+        datasets:[{
+
+          label:"Revenue",
+
+          data:[
+            15000,
+            35000,
+            42000,
+            18000,
+            60000,
+            50000,
+            70000
+          ],
+
+          borderColor:"#00a86b",
+
+          tension:.4,
+
+          fill:false
+
+        }]
+
+      }
+
+    }
+
+  );
+
+}
+
+
+
+
+
+
+function loadRevenueDistributionChart(){
+
+  if(revenueDistributionChart){
+
+    revenueDistributionChart.destroy();
+
+  }
+
+  revenueDistributionChart =
+  new Chart(
+
+    document.getElementById(
+      "revenueDistributionChart"
+    ),
+
+    {
+
+      type:"doughnut",
+
+      data:{
+
+        labels:[
+ "Internet",
+ "Voucher",
+ "Manual",
+ "Company"
+],
+
+        datasets:[{
+
+          data:[
+            16300,
+            304800,
+            52200
+          ],
+
+          backgroundColor:[
+            "#00c853",
+            "#ff9800",
+            "#2196f3"
+          ]
+
+        }]
+
+      },
+
+      options:{
+        cutout:"70%"
+      }
+
+    }
+
+  );
+
+}
+
+
+
+
+
+async function loadRecentActivity(){
+
+  const container =
+  document.getElementById(
+    "recentActivity"
+  );
+
+  const snap =
+  await db.collection(
+    "transactions"
+  )
+  .orderBy(
+    "createdAt",
+    "desc"
+  )
+  .limit(10)
+  .get();
+
+  let html = "";
+
+  snap.forEach(doc=>{
+
+    const tx = doc.data();
+
+html += `
+
+<div class="activity-item">
+
+  <div class="activity-details">
+
+    <div class="activity-user">
+      ${tx.fullName || "BIVA User"}
+    </div>
+
+    <div class="activity-service">
+      Purchased ${tx.plan || tx.category || "Service"}
+    </div>
+
+  </div>
+
+  <div style="text-align:right">
+
+    <div class="activity-amount">
+      ₦${Number(tx.amount || 0).toLocaleString()}
+    </div>
+
+    <div class="activity-time">
+      ${
+        tx.createdAt?.toDate
+        ? tx.createdAt.toDate().toLocaleDateString()
+        : ""
+      }
+    </div>
+
+  </div>
+
+</div>
+
+`;
+
+  });
+
+  container.innerHTML =
+  html;
+
+}
 
 
 
@@ -6142,6 +7401,41 @@ async function exportUserEmails(){
   </div>
 
 </div>
+
+
+
+
+
+
+<div class="dashboard-footer">
+
+<div class="footer-stat">
+  <strong id="totalUsers">91</strong>
+  <span>Registered Users</span>
+</div>
+
+<div class="footer-stat">
+  <strong id="todaySignups">1</strong>
+  <span>Signups Today</span>
+</div>
+
+<div class="footer-stat">
+  <strong id="pendingTransactions">0</strong>
+  <span>Pending Tx</span>
+</div>
+
+<div class="footer-stat">
+  <strong id="failedTransactions">0</strong>
+  <span>Failed Tx</span>
+</div>
+
+<div class="footer-stat">
+  <strong id="todayTransactions">3</strong>
+  <span>Today's Tx</span>
+</div>
+
+</div>
+
 
 
 
