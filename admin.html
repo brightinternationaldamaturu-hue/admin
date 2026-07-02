@@ -3248,6 +3248,10 @@ if(
 }
 
   });
+
+
+
+
 /* REAL PROFIT */
 
 profit = income - expenditure;
@@ -3398,15 +3402,12 @@ expenseSnap.forEach(doc => {
 
   }
 
-  if(
+if(
     item.type === "income" ||
-    item.type === "profit" ||
-    item.type === "sale"
-  ) {
-
+    item.type === "profit"
+){
     companyIncome += amount;
-
-  }
+}
 
 });
 
@@ -3631,64 +3632,93 @@ document.getElementById("financeLegend").innerHTML = `
 
 
 
-function loadRevenueTrendChart(){
+async function loadRevenueTrendChart(){
 
-  if(revenueTrendChart){
+    const txSnap = await db.collection("transactions").get();
 
-    revenueTrendChart.destroy();
+    const revenue = {
+        Mon:0,
+        Tue:0,
+        Wed:0,
+        Thu:0,
+        Fri:0,
+        Sat:0,
+        Sun:0
+    };
 
-  }
+    txSnap.forEach(doc=>{
 
-  revenueTrendChart =
-  new Chart(
+        const tx = doc.data();
 
-    document.getElementById(
-      "revenueTrendChart"
-    ),
+        if(!tx.createdAt?.toDate) return;
 
-    {
+        const date = tx.createdAt.toDate();
 
-      type:"line",
+        const day = date.toLocaleDateString(
+            "en-US",
+            {weekday:"short"}
+        );
 
-      data:{
+        const amount = Number(tx.amount || 0);
 
-        labels:[
-          "Mon",
-          "Tue",
-          "Wed",
-          "Thu",
-          "Fri",
-          "Sat",
-          "Sun"
-        ],
+        if([
+            "voucher",
+            "data",
+            "airtime",
+            "electricity",
+            "education",
+            "tv"
+        ].includes(tx.type)){
 
-        datasets:[{
+            revenue[day] += amount;
 
-          label:"Revenue",
+        }
 
-          data:[
-            15000,
-            35000,
-            42000,
-            18000,
-            60000,
-            50000,
-            70000
-          ],
+    });
 
-          borderColor:"#00a86b",
+    const manualSnap = await db.collection("manualSales")
+        .where("status","==","approved")
+        .get();
 
-          tension:.4,
+    manualSnap.forEach(doc=>{
 
-          fill:false
+        const sale = doc.data();
 
-        }]
+        if(!sale.createdAt?.toDate) return;
 
-      }
+        const day = sale.createdAt.toDate().toLocaleDateString(
+            "en-US",
+            {weekday:"short"}
+        );
 
+        revenue[day] += Number(sale.amount || 0);
+
+    });
+
+    if(revenueTrendChart){
+        revenueTrendChart.destroy();
     }
 
-  );
+    revenueTrendChart = new Chart(
+        document.getElementById("revenueTrendChart"),
+        {
+            type:"line",
+            data:{
+                labels:Object.keys(revenue),
+                datasets:[{
+                    label:"Revenue",
+                    data:Object.values(revenue),
+                    borderColor:"#00a86b",
+                    fill:false,
+                    tension:.35
+                }]
+            },
+            options:{
+                responsive:true,
+                maintainAspectRatio:false
+            }
+        }
+    );
 
 }
 
