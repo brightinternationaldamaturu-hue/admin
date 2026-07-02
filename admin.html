@@ -2873,16 +2873,42 @@ const ADMIN_EMAILS = [
   "nuhuaudu1997@gmail.com"
 ];
 
+
+
+
+/* ===========================
+GLOBAL CACHE
+=========================== */
+
+const cache = {
+    users: [],
+    transactions: [],
+    manualSales: [],
+    companyTransactions: [],
+    internetAccounts: [],
+    finance: null,
+    recentActivity: []
+};
+
+
+
 /* ===========================
 GLOBAL
 =========================== */
 
-let usersData = [];
-let transactionsData = [];
-let manualSalesData = [];
+let usersData = cache.users;
+let transactionsData = cache.transactions;
+let manualSalesData = cache.manualSales;
 let currentChatId = null;
 let selectedUserId = null;
 let profitChart;
+
+
+let cacheLoaded = false;
+
+
+
+
 
 /* ===========================
 AUTH
@@ -2918,9 +2944,14 @@ showPage(
   document.querySelector(".menu button")
 );
 
-loadFinance();
-loadDashboard();
+await loadBootstrap();
+
+await loadFinance();
+
+await loadDashboard();
+
 loadNotifications();
+
 loadRecentActivity();
 
 });
@@ -3059,195 +3090,183 @@ today.setHours(
   0,0,0,0
 );
 
-  const usersSnap =
-  await db.collection("users")
-.limit(100)
-.get();;
 
-  document.getElementById("totalUsers").innerText =
-  usersSnap.size;
 
-  usersSnap.forEach(doc=>{
 
-  const u = doc.data();
 
-  if(
-    u.createdAt &&
-    u.createdAt.toDate &&
-    u.createdAt.toDate() >= today
-  ){
 
-    todaySignups++;
 
-  }
+
+
+const users = cache.users;
+
+document.getElementById("totalUsers").innerText =
+users.length;
+
+users.forEach(u=>{
+
+    if(
+        u.createdAt &&
+        u.createdAt.toDate &&
+        u.createdAt.toDate() >= today
+    ){
+
+        todaySignups++;
+
+    }
 
 });
 
 
-  /* TRANSACTIONS */
-
-  const txSnap =
-  await db.collection("transactions")
-.orderBy("createdAt","desc")
-.limit(200)
-.get();;
 
 
 
-  txSnap.forEach(doc=>{
+/* TRANSACTIONS */
 
-    const t = doc.data();
+cache.transactions.forEach(t=>{
 
-    if(!t.createdAt || !t.createdAt.toDate)
-    return;
+    if(!t.createdAt?.toDate)
+        return;
 
     const txDate =
     t.createdAt.toDate();
 
-
     if(txDate >= today){
 
-  todayTransactions++;
+        todayTransactions++;
 
-}
-
-
+    }
 
     if(txDate < startDate || txDate > endDate)
-    return;
+        return;
 
     const amount =
-    Number(t.amount || t.price || 0);
+    Number(
+        t.amount ||
+        t.price ||
+        0
+    );
+
+    if(t.status === "pending")
+        pendingTransactions++;
+
+    if(t.status === "failed")
+        failedTransactions++;
+
+    if([
+        "funding",
+        "fund",
+        "deposit",
+        "wallet-funding",
+        "admin-credit"
+    ].includes(t.type)){
+
+        funding += amount;
+
+    }
+
+    if([
+        "airtime",
+        "data",
+        "electricity",
+        "voucher",
+        "tv",
+        "purchase",
+        "education"
+    ].includes(t.type)){
+
+        income += amount;
+
+    }
+
+    if(t.type === "admin-debit"){
+
+        expenditure += amount;
+
+    }
+
+});
 
 
 
-    if(t.status === "pending"){
-  pendingTransactions++;
-}
-
-if(t.status === "failed"){
-  failedTransactions++;
-}
-
-
-/* FUNDING ONLY */
-
-if(
-  t.type === 'funding' ||
-  t.type === 'fund' ||
-  t.type === 'deposit' ||
-  t.type === 'wallet-funding' ||
-  t.type === 'admin-credit'
-){
-
-  funding += amount;
-
-}
-
-
-
-/* COUNT ALL SALES AS INCOME */
-
-const countedTypes = [
-  'airtime',
-  'data',
-  'electricity',
-  'voucher',
-  'tv',
-  'purchase',
-  'education'
-];
-
-if(countedTypes.includes(t.type)){
-  income += amount;
-}
 
 
 
 
 
-/* ADMIN DEBIT */
 
-if(t.type === 'admin-debit'){
 
-  expenditure += amount;
 
-}
 
-  });
+
+
+
+
+
 
   /* MANUAL SALES */
 
-  const manualSnap =
-  await db.collection("manualSales").get();
+cache.manualSales.forEach(d=>{
 
-  manualSnap.forEach(doc=>{
-
-    const d = doc.data();
-
-    if(!d.createdAt || !d.createdAt.toDate)
-    return;
+    if(!d.createdAt?.toDate)
+        return;
 
     const manualDate =
     d.createdAt.toDate();
 
     if(
-      manualDate < startDate ||
-      manualDate > endDate
+        manualDate < startDate ||
+        manualDate > endDate
     ) return;
 
-    if(d.status !== 'approved'){
+    if(d.status !== "approved"){
 
-      pending += Number(d.amount || 0);
+        pending += Number(d.amount || 0);
 
     }
 
-  });
+});
+
+
+
+
+
+
 
   /* EXPENSES */
 
-  const expenseSnap =
-  await db.collection("companyTransactions").get();
+cache.companyTransactions.forEach(e=>{
 
-  expenseSnap.forEach(doc=>{
-
-    const e = doc.data();
-
-    if(!e.createdAt || !e.createdAt.toDate)
-    return;
+    if(!e.createdAt?.toDate)
+        return;
 
     const expenseDate =
     e.createdAt.toDate();
 
     if(
-      expenseDate < startDate ||
-      expenseDate > endDate
+        expenseDate < startDate ||
+        expenseDate > endDate
     ) return;
 
-const companyAmount =
-Number(e.amount || 0);
+    const amount =
+    Number(e.amount || 0);
 
-/* EXPENSE */
+    if(e.type === "expense"){
 
-if(e.type === 'expense'){
+        expenditure += amount;
 
-  expenditure += companyAmount;
+    }
 
-}
+    if(
+        e.type === "income" ||
+        e.type === "profit"
+    ){
 
-/* COMPANY INCOME */
+        income += amount;
 
-if(
-  e.type === 'income' ||
-  e.type === 'profit' ||
-  e.type === 'sale'
-){
+    }
 
-  income += companyAmount;
-
-}
-
-  });
+});
 
 
 
@@ -3305,215 +3324,128 @@ todaySignups;
 
 
 async function loadFinance(){
-  
-  if(window.financeLoaded){
-  return;
+
+    let walletLiability = 0;
+    let cashbackLiability = 0;
+
+    let internetRevenue = 0;
+    let voucherRevenue = 0;
+    let manualRevenue = 0;
+
+    let totalExpenses = 0;
+    let companyIncome = 0;
+
+    /* USERS */
+
+    cache.users.forEach(user=>{
+
+        walletLiability += Number(user.wallet || 0);
+
+        cashbackLiability += Number(user.cashbackBalance || 0);
+
+    });
+
+    /* TRANSACTIONS */
+
+    cache.transactions.forEach(tx=>{
+
+        if(tx.type === "voucher"){
+
+            voucherRevenue += Number(tx.amount || 0);
+
+        }
+
+    });
+
+    /* INTERNET */
+
+    cache.internetAccounts.forEach(acc=>{
+
+        internetRevenue += Number(acc.amount || 0);
+
+    });
+
+    /* MANUAL SALES */
+
+    cache.manualSales.forEach(sale=>{
+
+        if(sale.status === "approved"){
+
+            manualRevenue += Number(sale.amount || 0);
+
+        }
+
+    });
+
+    /* COMPANY TRANSACTIONS */
+
+    cache.companyTransactions.forEach(item=>{
+
+        const amount = Number(item.amount || 0);
+
+        if(item.type === "expense"){
+
+            totalExpenses += amount;
+
+        }
+
+        if(
+            item.type === "income" ||
+            item.type === "profit"
+        ){
+
+            companyIncome += amount;
+
+        }
+
+    });
+
+    const totalIncome =
+        internetRevenue +
+        voucherRevenue +
+        manualRevenue +
+        companyIncome;
+
+    const netProfit =
+        totalIncome -
+        totalExpenses;
+
+    window.financeData = {
+        internetRevenue,
+        voucherRevenue,
+        manualRevenue,
+        companyIncome
+    };
+
+    document.getElementById("walletLiability").innerText =
+        "₦" + walletLiability.toLocaleString();
+
+    document.getElementById("cashbackLiability").innerText =
+        "₦" + cashbackLiability.toLocaleString();
+
+    document.getElementById("internetRevenue").innerText =
+        "₦" + internetRevenue.toLocaleString();
+
+    document.getElementById("voucherRevenue").innerText =
+        "₦" + voucherRevenue.toLocaleString();
+
+    document.getElementById("manualRevenue").innerText =
+        "₦" + manualRevenue.toLocaleString();
+
+    document.getElementById("companyIncome").innerText =
+        "₦" + companyIncome.toLocaleString();
+
+    document.getElementById("actualProfit").innerText =
+        "₦" + totalIncome.toLocaleString();
+
+    document.getElementById("totalExpenses").innerText =
+        "₦" + totalExpenses.toLocaleString();
+
+    document.getElementById("netProfit").innerText =
+        "₦" + netProfit.toLocaleString();
+
+    loadFinanceChart();
 }
-
-  let walletLiability = 0;
-  let cashbackLiability = 0;
-
-  let internetRevenue = 0;
-  let voucherRevenue = 0;
-  let manualRevenue = 0;
-
-  // USERS
-
-  const usersSnap =
-  await db.collection("users").get();
-
-  usersSnap.forEach(doc=>{
-
-    const user = doc.data();
-
-    walletLiability +=
-    Number(user.wallet || 0);
-
-    cashbackLiability +=
-    Number(user.cashbackBalance || 0);
-
-  });
-
-  // TRANSACTIONS
-
-  const txSnap =
-  await db.collection("transactions").get();
-
-  txSnap.forEach(doc=>{
-
-    const tx = doc.data();
-
-    const amount =
-    Number(tx.amount || 0);
-
-    if(tx.type === "voucher"){
-
-      voucherRevenue += amount;
-
-    }
-
-  });
-
-  // INTERNET ACCOUNTS
-
-  const internetSnap =
-  await db.collection("internetAccounts").get();
-
-  internetSnap.forEach(doc=>{
-
-    const acc = doc.data();
-
-    internetRevenue +=
-    Number(acc.amount || 0);
-
-  });
-
-  // MANUAL SALES
-
-  const manualSnap =
-  await db.collection("manualSales")
-  .where("status","==","approved")
-  .get();
-
-  manualSnap.forEach(doc=>{
-
-    manualRevenue +=
-    Number(doc.data().amount || 0);
-
-  });
-
-
-let totalExpenses = 0;
-let companyIncome = 0;
-
-const expenseSnap =
-await db.collection("companyTransactions").get();
-
-expenseSnap.forEach(doc => {
-
-  const item = doc.data();
-
-  const amount =
-  Number(item.amount || 0);
-
-  if(item.type === "expense") {
-
-    totalExpenses += amount;
-
-  }
-
-if(
-    item.type === "income" ||
-    item.type === "profit"
-){
-    companyIncome += amount;
-}
-
-});
-
-const totalIncome =
-  internetRevenue +
-  voucherRevenue +
-  manualRevenue +
-  companyIncome;
-
-const netProfit =
-  totalIncome -
-  totalExpenses;
-
-console.log(
-  "Company Income:",
-  companyIncome
-);
-
-console.log(
-  "Total Income:",
-  totalIncome
-);
-
-console.log(
-  "Total Expenses:",
-  totalExpenses
-);
-
-console.log(
-  "Net Profit:",
-  netProfit
-);
-
-
-  document.getElementById(
-    "walletLiability"
-  ).innerText =
-  "₦" +
-  walletLiability.toLocaleString();
-
-  document.getElementById(
-    "cashbackLiability"
-  ).innerText =
-  "₦" +
-  cashbackLiability.toLocaleString();
-
-  document.getElementById(
-    "internetRevenue"
-  ).innerText =
-  "₦" +
-  internetRevenue.toLocaleString();
-
-  document.getElementById(
-    "voucherRevenue"
-  ).innerText =
-  "₦" +
-  voucherRevenue.toLocaleString();
-
-  document.getElementById(
-    "manualRevenue"
-  ).innerText =
-  "₦" +
-  manualRevenue.toLocaleString();
-
-
-  document.getElementById(
-  "companyIncome"
-).innerText =
-"₦" +
-companyIncome.toLocaleString();
-
-
-window.financeData = {
-  internetRevenue,
-  voucherRevenue,
-  manualRevenue,
-  companyIncome
-};
-
-
-
-document.getElementById(
-  "actualProfit"
-).innerText =
-"₦" +
-totalIncome.toLocaleString();
-
-document.getElementById(
-  "totalExpenses"
-).innerText =
-"₦" +
-totalExpenses.toLocaleString();
-
-document.getElementById(
-  "netProfit"
-).innerText =
-"₦" +
-netProfit.toLocaleString();
-
-  loadFinanceChart();
-  loadRevenueTrendChart();
-  loadRecentActivity();
-
-window.financeLoaded = true;
-}
-
 
 
 
@@ -3632,9 +3564,7 @@ document.getElementById("financeLegend").innerHTML = `
 
 
 
-async function loadRevenueTrendChart(){
-
-    const txSnap = await db.collection("transactions").get();
+function loadRevenueTrendChart(){
 
     const revenue = {
         Mon:0,
@@ -3646,20 +3576,19 @@ async function loadRevenueTrendChart(){
         Sun:0
     };
 
-    txSnap.forEach(doc=>{
+    /* TRANSACTIONS */
 
-        const tx = doc.data();
+    cache.transactions.forEach(tx=>{
 
         if(!tx.createdAt?.toDate) return;
 
-        const date = tx.createdAt.toDate();
-
-        const day = date.toLocaleDateString(
+        const day =
+        tx.createdAt
+        .toDate()
+        .toLocaleDateString(
             "en-US",
             {weekday:"short"}
         );
-
-        const amount = Number(tx.amount || 0);
 
         if([
             "voucher",
@@ -3670,23 +3599,25 @@ async function loadRevenueTrendChart(){
             "tv"
         ].includes(tx.type)){
 
-            revenue[day] += amount;
+            revenue[day] += Number(tx.amount || 0);
 
         }
 
     });
 
-    const manualSnap = await db.collection("manualSales")
-        .where("status","==","approved")
-        .get();
+    /* MANUAL SALES */
 
-    manualSnap.forEach(doc=>{
+    cache.manualSales.forEach(sale=>{
 
-        const sale = doc.data();
+        if(
+            sale.status !== "approved" ||
+            !sale.createdAt?.toDate
+        ) return;
 
-        if(!sale.createdAt?.toDate) return;
-
-        const day = sale.createdAt.toDate().toLocaleDateString(
+        const day =
+        sale.createdAt
+        .toDate()
+        .toLocaleDateString(
             "en-US",
             {weekday:"short"}
         );
@@ -3696,32 +3627,55 @@ async function loadRevenueTrendChart(){
     });
 
     if(revenueTrendChart){
+
         revenueTrendChart.destroy();
+
     }
 
-    revenueTrendChart = new Chart(
-        document.getElementById("revenueTrendChart"),
+    revenueTrendChart =
+    new Chart(
+
+        document.getElementById(
+            "revenueTrendChart"
+        ),
+
         {
+
             type:"line",
+
             data:{
+
                 labels:Object.keys(revenue),
+
                 datasets:[{
+
                     label:"Revenue",
+
                     data:Object.values(revenue),
+
                     borderColor:"#00a86b",
-                    fill:false,
-                    tension:.35
+
+                    tension:.35,
+
+                    fill:false
+
                 }]
+
             },
+
             options:{
+
                 responsive:true,
+
                 maintainAspectRatio:false
+
             }
+
         }
+
     );
 
 }
-
 
 
 
@@ -3787,72 +3741,81 @@ function loadRevenueDistributionChart(){
 
 
 
-async function loadRecentActivity(){
+function loadRecentActivity(){
 
-  const container =
-  document.getElementById(
-    "recentActivity"
-  );
+    const container =
+    document.getElementById(
+        "recentActivity"
+    );
 
-  const snap =
-  await db.collection(
-    "transactions"
-  )
-  .orderBy(
-    "createdAt",
-    "desc"
-  )
-  .limit(10)
-  .get();
+    const latest = [...cache.transactions]
 
-  let html = "";
+        .filter(t=>t.createdAt?.toDate)
 
-  snap.forEach(doc=>{
+        .sort((a,b)=>
+            b.createdAt.toDate() -
+            a.createdAt.toDate()
+        )
 
-    const tx = doc.data();
+        .slice(0,10);
 
-html += `
+    let html = "";
+
+    latest.forEach(tx=>{
+
+        html += `
 
 <div class="activity-item">
 
-  <div class="activity-details">
+<div class="activity-details">
 
-    <div class="activity-user">
-      ${tx.fullName || "BIVA User"}
-    </div>
+<div class="activity-user">
 
-    <div class="activity-service">
-      Purchased ${tx.plan || tx.category || "Service"}
-    </div>
+${tx.fullName || "BIVA User"}
 
-  </div>
+</div>
 
-  <div style="text-align:right">
+<div class="activity-service">
 
-    <div class="activity-amount">
-      ₦${Number(tx.amount || 0).toLocaleString()}
-    </div>
+Purchased ${tx.plan || tx.category || "Service"}
 
-    <div class="activity-time">
-      ${
-        tx.createdAt?.toDate
-        ? tx.createdAt.toDate().toLocaleDateString()
-        : ""
-      }
-    </div>
+</div>
 
-  </div>
+</div>
+
+<div style="text-align:right">
+
+<div class="activity-amount">
+
+₦${Number(tx.amount || 0).toLocaleString()}
+
+</div>
+
+<div class="activity-time">
+
+${
+tx.createdAt?.toDate
+?
+tx.createdAt.toDate().toLocaleDateString()
+:
+""
+}
+
+</div>
+
+</div>
 
 </div>
 
 `;
 
-  });
+    });
 
-  container.innerHTML =
-  html;
+    container.innerHTML = html;
 
 }
+
+
 
 
 
@@ -4694,6 +4657,108 @@ async function submitWalletDebit(){
   }
 
 }
+
+
+
+
+
+
+async function loadBootstrap(){
+
+    if(cacheLoaded){
+        return;
+    }
+
+    const [
+
+        usersSnap,
+        txSnap,
+        manualSnap,
+        companySnap,
+        internetSnap
+
+    ] = await Promise.all([
+
+        db.collection("users").get(),
+
+        db.collection("transactions").get(),
+
+        db.collection("manualSales").get(),
+
+        db.collection("companyTransactions").get(),
+
+        db.collection("internetAccounts").get()
+
+    ]);
+
+    cache.users =
+        usersSnap.docs.map(doc=>({
+            id:doc.id,
+            ...doc.data()
+        }));
+
+    cache.transactions =
+        txSnap.docs.map(doc=>({
+            id:doc.id,
+            ...doc.data()
+        }));
+
+    cache.manualSales =
+        manualSnap.docs.map(doc=>({
+            id:doc.id,
+            ...doc.data()
+        }));
+
+    cache.companyTransactions =
+        companySnap.docs.map(doc=>({
+            id:doc.id,
+            ...doc.data()
+        }));
+
+    cache.internetAccounts =
+        internetSnap.docs.map(doc=>({
+            id:doc.id,
+            ...doc.data()
+        }));
+
+    usersData = cache.users;
+    transactionsData = cache.transactions;
+    manualSalesData = cache.manualSales;
+
+    cacheLoaded = true;
+
+}
+
+
+await refreshBootstrap();
+
+
+
+
+
+
+
+async function refreshBootstrap(){
+
+    cacheLoaded = false;
+
+    await loadBootstrap();
+
+    await loadFinance();
+
+    await loadDashboard();
+
+    loadRevenueTrendChart();
+
+    loadRecentActivity();
+
+}
+
+
+
+
+
+
 
 
 /* ===========================
